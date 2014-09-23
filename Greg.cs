@@ -2,6 +2,25 @@ namespace ShallowRed
 {
     public static class FENExtensions
     {
+        static public ChessMove GenerateMove(this char[] from, char[] to)
+        {
+            int[] pos = new int[2]; 
+
+            int changes = 0;
+            for(int i = 0; i< from.Length && changes<2;++i)
+            {
+                if(from[i] != to[i])
+                {
+                        pos[changes++] = i;
+                }
+            }
+
+            if (to[pos[1]] == '_') //spot vacated
+                return new ChessMove(new ChessLocation(pos[1] % 9, pos[1] / 9), new ChessLocation(pos[0] % 9, pos[0] / 9));
+
+            return new ChessMove(new ChessLocation(pos[0] % 9, pos[0] / 9), new ChessLocation(pos[1] % 9, pos[1] / 9));
+        }
+        
         static public char[] ToShallowRedFEN(this string originalFen)
         {
             string newForm = "";
