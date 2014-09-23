@@ -1,4 +1,3 @@
-//inset code here
 namespace ShallowRed
 {
     public static class FENExtensions
@@ -20,7 +19,12 @@ namespace ShallowRed
             }
             return newForm.ToArray();
         }
-        static public char[] FENBoardAfterMove(this char[] board, int from, int to)
+
+        static public char[] Move(this char[] board, int fromX, int fromY, int toX, int toY)
+        {
+            return board.Move(fromX + (9 * fromY), toX + (9 * toY));
+        }
+        static public char[] Move(this char[] board, int from, int to)
         {
             char[] b = (char[])board.Clone();
             b[to] = b[from];
@@ -52,7 +56,7 @@ namespace ShallowRed
             {
                 if (IsValidMove(board, white, idx))
                 {
-                    moves.Add(FENBoardAfterMove(board, i, idx));
+                    moves.Add(Move(board, i, idx));
                     if (TakesOpponentPiece(board, white, idx))
                         break;
                 }
@@ -66,7 +70,7 @@ namespace ShallowRed
             {
                 if (IsValidMove(board, white, idx))
                 {
-                    moves.Add(FENBoardAfterMove(board, i, idx));
+                    moves.Add(Move(board, i, idx));
                     if (TakesOpponentPiece(board, white, idx))
                         break;
                 }
@@ -81,7 +85,7 @@ namespace ShallowRed
             {
                 if (IsValidMove(board, white, bse + idx))
                 {
-                    moves.Add(FENBoardAfterMove(board, i, bse+idx));
+                    moves.Add(Move(board, i, bse+idx));
                     if (TakesOpponentPiece(board, white, bse+idx))
                         break;
                 }
@@ -96,7 +100,7 @@ namespace ShallowRed
             {
                 if (IsValidMove(board, white, bse+idx))
                 {
-                    moves.Add(FENBoardAfterMove(board, i, bse+idx));
+                    moves.Add(Move(board, i, bse+idx));
                     if (TakesOpponentPiece(board, white, bse+idx))
                         break;
                 }
@@ -112,7 +116,7 @@ namespace ShallowRed
             {
                 if (IsValidMove(board, white, idx))
                 {
-                    moves.Add(FENBoardAfterMove(board, i, idx));
+                    moves.Add(Move(board, i, idx));
                     if (board.TakesOpponentPiece(white, idx))
                         break;
                 }
@@ -125,7 +129,7 @@ namespace ShallowRed
             {
                 if (IsValidMove(board, white, idx))
                 {
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
                     if (board.TakesOpponentPiece(white, idx))
                         break;
                 }
@@ -139,7 +143,7 @@ namespace ShallowRed
             {
                 if (board.IsValidMove(white, idx))
                 {
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
                     if (board.TakesOpponentPiece(white, idx))
                         break;
                 }
@@ -152,7 +156,7 @@ namespace ShallowRed
             {
                 if (board.IsValidMove(white, idx))
                 {
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
                     if (board.TakesOpponentPiece(white, idx))
                         break;
                 }
@@ -165,28 +169,28 @@ namespace ShallowRed
         {
             int idx = i + 19;
             if (idx < 71 && idx % 9 != 0 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
             idx = i + 17;
             if (idx < 71 && idx % 9 != 8 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
             idx = i + 11;
             if (idx < 71 && idx % 9 != 0 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
             idx = i + 7;
             if (idx < 71 && idx % 9 != 8 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
             idx = i - 19;
             if (idx > -1 && idx % 9 != 8 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
             idx = i - 17;
             if (idx > -1 && idx % 9 != 0 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
             idx = i - 11;
             if (idx > -1 && idx % 9 != 8 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
             idx = i - 7;
             if (idx > -1 && idx % 9 != 0 && board.IsValidMove(white, idx))
-                moves.Add(board.FENBoardAfterMove(i, idx));
+                moves.Add(board.Move(i, idx));
         }
 
         static public void AddKingMoves(this char[] board, bool white, int i, ref List<char[]> moves)
@@ -195,28 +199,28 @@ namespace ShallowRed
             if (idx < 71)
             {
                 if (idx % 9 != 8 && board.IsValidMove(white, i))
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
                 if (board.IsValidMove(white, ++idx))
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
                 if (++idx % 9 != 0 && board.IsValidMove(white, i))
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
 
                 idx = i + 1;
                 if (idx % 9 != 0 && board.IsValidMove(white, i))
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
                 idx = i - 1;
                 if (idx % 9 != 8 && board.IsValidMove(white, i))
-                    moves.Add(board.FENBoardAfterMove(i, idx));
+                    moves.Add(board.Move(i, idx));
 
                 idx = i - 8;
                 if (idx > -1)
                 {
                     if (idx % 9 != 0 && board.IsValidMove(white, idx))
-                        moves.Add(board.FENBoardAfterMove(i, idx));
+                        moves.Add(board.Move(i, idx));
                     if (board.IsValidMove(white, --idx))
-                        moves.Add(board.FENBoardAfterMove(i, idx));
+                        moves.Add(board.Move(i, idx));
                     if (--idx % 9 != 8 && board.IsValidMove(white, idx))
-                        moves.Add(board.FENBoardAfterMove(i, idx));
+                        moves.Add(board.Move(i, idx));
                 }
             }
         }
@@ -226,10 +230,10 @@ namespace ShallowRed
                 if (i / 9 == 1)
                 {
                     if (board.IsValidMove(white, i + 18))
-                        moves.Add(board.FENBoardAfterMove(i, i + 18));
+                        moves.Add(board.Move(i, i + 18));
                 }
                 if (board.IsValidMove(white, i + 9))
-                        moves.Add(board.FENBoardAfterMove(i, i + 9));           
+                        moves.Add(board.Move(i, i + 9));           
         }
     }
     public static class FEN
