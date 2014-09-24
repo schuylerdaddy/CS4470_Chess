@@ -23,7 +23,7 @@
             int blackValue = 0;
             for (int i = 0; i < boardState.Length; i++)
             {
-                if (boardState[i] != '_' && boardState[i] != '/')
+                if (boardState[i] != '_' && boardState[i] != '/' && char.ToLower(boardState[i]) != 'k')
                 {
                     if (char.IsUpper(boardState[i]))
                         whiteValue += pieceValues[char.ToLower(boardState[i])];
@@ -41,7 +41,7 @@
         private static Dictionary<char, int> pieceValues = new Dictionary<char, int>
         {
                {'p', 1},
-               {'k', 3},
+               {'n', 3},
                {'b', 3},
                {'r', 5},
                {'q', 10}
