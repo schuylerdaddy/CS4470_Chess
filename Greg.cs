@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace ShallowRed
 {
     public static class FENExtensions
@@ -20,7 +26,6 @@ namespace ShallowRed
 
             return new ChessMove(new ChessLocation(pos[0] % 9, pos[0] / 9), new ChessLocation(pos[1] % 9, pos[1] / 9));
         }
-        
         static public char[] ToShallowRedFEN(this string originalFen)
         {
             string newForm = "";
@@ -43,6 +48,7 @@ namespace ShallowRed
         {
             return board.Move(fromX + (9 * fromY), toX + (9 * toY));
         }
+
         static public char[] Move(this char[] board, int from, int to)
         {
             char[] b = (char[])board.Clone();
@@ -51,11 +57,27 @@ namespace ShallowRed
             return b;
         }
 
+        static public char[] MovePawn(this char[] board, int from, int to, bool white)
+        {
+            char[] b = (char[])board.Clone();
+            if(white)
+            {
+                b[to] = (to < 8) ? 'Q' : 'P'; 
+                b[from] = '_';
+            }
+            else
+            {
+                b[to] = (to > 62) ? 'q' : 'p';
+                b[from] = '_';
+            }
+            return b;
+        }
+
         static private bool IsValidMove(this char[] board, bool white, int to)
         {
             if (board[to] == '_')
                 return true;
-            return white ? !Char.IsLower(board[to]) : Char.IsUpper(board[to]);
+            return white ? Char.IsLower(board[to]) : Char.IsUpper(board[to]);
         }
 
         static private bool TakesOpponentPiece(this char[] board, bool white, int to)
@@ -217,48 +239,72 @@ namespace ShallowRed
             int idx = i + 8;
             if (idx < 71)
             {
-                if (idx % 9 != 8 && board.IsValidMove(white, i))
+                if (idx % 9 != 8 && board.IsValidMove(white, idx))
                     moves.Add(board.Move(i, idx));
                 if (board.IsValidMove(white, ++idx))
                     moves.Add(board.Move(i, idx));
-                if (++idx % 9 != 0 && board.IsValidMove(white, i))
+                if (++idx % 9 != 8 && board.IsValidMove(white, idx))
                     moves.Add(board.Move(i, idx));
-
-                idx = i + 1;
-                if (idx % 9 != 0 && board.IsValidMove(white, i))
-                    moves.Add(board.Move(i, idx));
-                idx = i - 1;
-                if (idx % 9 != 8 && board.IsValidMove(white, i))
-                    moves.Add(board.Move(i, idx));
-
-                idx = i - 8;
-                if (idx > -1)
-                {
-                    if (idx % 9 != 0 && board.IsValidMove(white, idx))
-                        moves.Add(board.Move(i, idx));
-                    if (board.IsValidMove(white, --idx))
-                        moves.Add(board.Move(i, idx));
-                    if (--idx % 9 != 8 && board.IsValidMove(white, idx))
-                        moves.Add(board.Move(i, idx));
-                }
             }
+                
+            idx = i + 1;
+            if (idx % 9 != 0 && board.IsValidMove(white, idx))
+                moves.Add(board.Move(i, idx));
+            idx = i - 1;
+            if (idx % 9 != 8 && board.IsValidMove(white, idx))
+                moves.Add(board.Move(i, idx));
+
+            idx = i - 8;
+            if (idx > -1)
+            {
+                if (idx % 9 != 0 && board.IsValidMove(white, idx))
+                    moves.Add(board.Move(i, idx));
+                if (board.IsValidMove(white, --idx))
+                    moves.Add(board.Move(i, idx));
+                if (idx % 9 != 0 && board.IsValidMove(white, --idx))
+                    moves.Add(board.Move(i, idx));
+            }
+            
         }
 
         static public void AddPawnMoves(this char[] board, bool white, int i, ref List<char[]> moves)
         {
+            if (!white)
+            {
                 if (i / 9 == 1)
                 {
-                    if (board.IsValidMove(white, i + 18))
-                        moves.Add(board.Move(i, i + 18));
+                    if (board.IsValidMove(white, i + 18)  && board[i+9] == '_')
+                        moves.Add(board.MovePawn(i, i + 18,false));
                 }
-                if (board.IsValidMove(white, i + 9))
-                        moves.Add(board.Move(i, i + 9));           
+              
+                if(board[i+9] == '_')
+                    moves.Add(board.MovePawn(i, i + 9,false));
+                if(Char.IsUpper(board[i+8]))
+                    moves.Add(board.MovePawn(i, i + 8,false));
+                if (i < 61 && Char.IsUpper(board[i + 10]))
+                    moves.Add(board.MovePawn(i, i + 10,false));
+            }
+            else
+            {
+                if (i / 9 == 6)
+                {
+                    if (board.IsValidMove(white, i - 18) && board[i-9] == '_')
+                        moves.Add(board.MovePawn(i, i - 18,true));
+                }
+                if (board[i - 9] == '_')
+                    moves.Add(board.MovePawn(i, i - 9, true));
+                if (Char.IsLower(board[i - 8]))
+                    moves.Add(board.MovePawn(i, i - 8, true));
+                if (1 > 10 && Char.IsLower(board[i - 10]))
+                    moves.Add(board.MovePawn(i, i - 10,true));
+            }
         }
     }
     public static class FEN
     {
-        static public List<char[]> GetAvailableMoves(char[] board, bool white)
+        static public List<char[]> GetAvailableMoves(char[] board, ChessColor color)
         {
+            bool white = color == ChessColor.White;
             List<char[]> moves = new List<char[]>();
             //iterate thru entire board {64} including row delimiters {7}
             for (int i = 0; i < 71; ++i)
@@ -268,8 +314,8 @@ namespace ShallowRed
                     switch (board[i])
                     {
                         case 'p':
-
-
+                            board.AddPawnMoves(white, i, ref moves);
+                            break;
                         case 'r':
                             board.AddAdjacentMaps(white, i, ref moves);
                             break;
@@ -321,3 +367,4 @@ namespace ShallowRed
 
     }
 }
+
