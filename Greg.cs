@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ShallowRed
-{
     public static class FENExtensions
     {
         static public ChessMove GenerateMove(this char[] from, char[] to)
@@ -77,12 +70,12 @@ namespace ShallowRed
         {
             if (board[to] == '_')
                 return true;
-            return white ? Char.IsLower(board[to]) : Char.IsUpper(board[to]);
+            return !white ? Char.IsUpper(board[to]) : Char.IsLower(board[to]);
         }
 
         static private bool TakesOpponentPiece(this char[] board, bool white, int to)
         {
-            return (Char.IsUpper(board[to]));
+            return !white?(Char.IsUpper(board[to])):(Char.IsLower(board[to]));
         }
 
         static private bool EmptySpace(this char[] board, bool white, int to)
@@ -273,7 +266,7 @@ namespace ShallowRed
             {
                 if (i / 9 == 1)
                 {
-                    if (board.IsValidMove(white, i + 18)  && board[i+9] == '_')
+                    if (board[i+18] == '_')
                         moves.Add(board.MovePawn(i, i + 18,false));
                 }
               
@@ -288,7 +281,7 @@ namespace ShallowRed
             {
                 if (i / 9 == 6)
                 {
-                    if (board.IsValidMove(white, i - 18) && board[i-9] == '_')
+                    if ( board[i-18] == '_')
                         moves.Add(board.MovePawn(i, i - 18,true));
                 }
                 if (board[i - 9] == '_')
@@ -366,5 +359,3 @@ namespace ShallowRed
         }
 
     }
-}
-
