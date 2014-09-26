@@ -1,4 +1,3 @@
-
     public static class FENExtensions
     {
         static public ChessMove GenerateMove(this char[] from, char[] to)
@@ -229,33 +228,67 @@
 
         static public void AddKingMoves(this char[] board, bool white, int i, ref List<char[]> moves)
         {
+            char[] temp;
+
             int idx = i + 8;
             if (idx < 71)
             {
                 if (idx % 9 != 8 && board.IsValidMove(white, idx))
-                    moves.Add(board.Move(i, idx));
+                {
+                    temp = board.Move(i, idx);
+                    if(!temp.InCheck(white))
+                        moves.Add(temp);
+                }
                 if (board.IsValidMove(white, ++idx))
-                    moves.Add(board.Move(i, idx));
+                {
+                    temp = board.Move(i, idx);
+                    if (!temp.InCheck(white))
+                        moves.Add(temp);
+                }
                 if (++idx % 9 != 8 && board.IsValidMove(white, idx))
-                    moves.Add(board.Move(i, idx));
+                {
+                    temp = board.Move(i, idx);
+                    if (!temp.InCheck(white))
+                        moves.Add(temp);
+                }
             }
                 
             idx = i + 1;
             if (idx % 9 != 0 && board.IsValidMove(white, idx))
-                moves.Add(board.Move(i, idx));
+            {
+                temp = board.Move(i, idx);
+                if (!temp.InCheck(white))
+                    moves.Add(temp);
+            }
             idx = i - 1;
             if (idx % 9 != 8 && board.IsValidMove(white, idx))
-                moves.Add(board.Move(i, idx));
+            {
+                temp = board.Move(i, idx);
+                if (!temp.InCheck(white))
+                    moves.Add(temp);
+            }
 
             idx = i - 8;
             if (idx > -1)
             {
                 if (idx % 9 != 0 && board.IsValidMove(white, idx))
-                    moves.Add(board.Move(i, idx));
+                {
+                    temp = board.Move(i, idx);
+                    if (!temp.InCheck(white))
+                        moves.Add(temp);
+                }
                 if (board.IsValidMove(white, --idx))
-                    moves.Add(board.Move(i, idx));
+                {
+                    temp = board.Move(i, idx);
+                    if (!temp.InCheck(white))
+                        moves.Add(temp);
+                }
                 if (idx % 9 != 0 && board.IsValidMove(white, --idx))
-                    moves.Add(board.Move(i, idx));
+                {
+                    temp = board.Move(i, idx);
+                    if (!temp.InCheck(white))
+                        moves.Add(temp);
+                }
             }
             
         }
@@ -264,13 +297,13 @@
         {
             if (!white)
             {
-                if (i / 9 == 1 )
+                if (i / 9 == 1)
                 {
-                    if (board[i+18] == '_'& board[i + 9] == '_')
+                    if (board[i + 18] == '_' && board[i + 9] == '_')
                         moves.Add(board.MovePawn(i, i + 18,false));
                 }
-              
-                if(board[i+9] == '_')
+
+                if (board[i + 9] == '_')
                     moves.Add(board.MovePawn(i, i + 9,false));
                 if(Char.IsUpper(board[i+8]))
                     moves.Add(board.MovePawn(i, i + 8,false));
@@ -281,7 +314,7 @@
             {
                 if (i / 9 == 6)
                 {
-                    if ( board[i-18] == '_' && board[i - 9] == '_')
+                    if (board[i - 18] == '_' && board[i - 9] == '_')
                         moves.Add(board.MovePawn(i, i - 18,true));
                 }
                 if (board[i - 9] == '_')
@@ -292,11 +325,155 @@
                     moves.Add(board.MovePawn(i, i - 10,true));
             }
         }
+
+        public static bool InCheck(this char[] board, bool white )
+        {
+            return board.DiagonalCheck(white)//  || richardFunctionAdjacent || richardFunctionKnight;
+        }
+
+        private static bool DiagonalCheck(this char[] board, bool white)
+        {
+            int kingPos = board.GetKingPos(white);
+            int idx =  kingPos+ 8;
+            int idx2 = idx+2;
+
+            if(idx < 71)
+            {
+                if(idx%9 != 8)
+                {
+                    if (white)
+                    {
+                        if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
+                            return true;
+                    }
+                    else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K' || board[idx] == 'P')
+                        return true;
+                }
+
+                if(idx2 % 9 != 8)
+                {
+                    if (white)
+                    {
+                        if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
+                            return true;
+                    }
+                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K' || board[idx2] == 'P')
+                        return true;
+
+                }
+
+                idx += 8;
+                idx2 +=  10;
+
+                while(idx<71)
+                {
+                    if (idx % 9 != 8)
+                    {
+                        if (white)
+                        {
+                            if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
+                                return true;
+                        }
+                        else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
+                            return true;
+                    }
+
+                    if (idx2<71 && idx2 % 9 != 8)
+                    {
+                        if (white)
+                        {
+                            if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
+                                return true;
+                        }
+                        else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
+                             return true;
+                    }
+
+                    idx += 8;
+                    idx2 += 10;
+                }
+            }
+
+            idx = kingPos - 10;
+            idx2 = idx + 2;
+
+            if (idx > -1)
+            {
+                if (idx % 9 != 8)
+                {
+                    if (white)
+                    {
+                        if(board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k' || board[idx] == 'p')
+                            return true;
+                    }
+                    else if(board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
+                        return true;
+                }
+
+                if (idx2 % 9 != 8)
+                {
+                    if (white)
+                    {
+                        if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k' || board[idx2] == 'p')
+                            return true;
+                    }
+                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
+                        return true;
+                }
+
+                idx -= 10;
+                idx2 -= 8;
+
+                while (idx > -1)
+                {
+                    if (idx % 9 != 8)
+                    {
+                        if (white)
+                        {
+                            if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
+                                return true;
+                        }
+                        else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
+                            return true;
+                    }
+
+                    if (idx > -1 && idx2 % 9 != 8)
+                    {
+                        if (white)
+                        {
+                            if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
+                                return true;
+                        }
+                        else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
+                            return true;
+                    }
+
+                    idx -= 10;
+                    idx2 -= 8;
+                }
+            }
+            return false;
+        }
+
+        private static int GetKingPos(this char[] board, bool white)
+        {
+            char kingChar = white ? 'K' : 'k';
+            for (int i = 0; i < 71; ++i)
+            {
+                if (board[i] == kingChar)
+                {
+                    return i;
+                }
+            }
+            return 0;
+        }
     }
+
     public static class FEN
     {
         static public List<char[]> GetAvailableMoves(char[] board, ChessColor color)
         {
+
             bool white = color == ChessColor.White;
             List<char[]> moves = new List<char[]>();
             //iterate thru entire board {64} including row delimiters {7}
