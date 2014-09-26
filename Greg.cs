@@ -264,9 +264,9 @@
         {
             if (!white)
             {
-                if (i / 9 == 1)
+                if (i / 9 == 1 )
                 {
-                    if (board[i+18] == '_')
+                    if (board[i+18] == '_'& board[i + 9] == '_')
                         moves.Add(board.MovePawn(i, i + 18,false));
                 }
               
@@ -281,7 +281,7 @@
             {
                 if (i / 9 == 6)
                 {
-                    if ( board[i-18] == '_')
+                    if ( board[i-18] == '_' && board[i - 9] == '_')
                         moves.Add(board.MovePawn(i, i - 18,true));
                 }
                 if (board[i - 9] == '_')
