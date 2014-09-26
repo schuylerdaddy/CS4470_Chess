@@ -328,12 +328,12 @@
 
         public static bool InCheck(this char[] board, bool white )
         {
-            return board.DiagonalCheck(white)//  || richardFunctionAdjacent || richardFunctionKnight;
+            int kingPos = board.GetKingPos(white);
+            return board.DiagonalCheck(white,kingPos);// || bool richardKnightMethod || bool richardAdjacentMethod
         }
 
-        private static bool DiagonalCheck(this char[] board, bool white)
+        private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
         {
-            int kingPos = board.GetKingPos(white);
             int idx =  kingPos+ 8;
             int idx2 = idx+2;
 
