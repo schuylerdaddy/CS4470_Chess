@@ -96,14 +96,33 @@ namespace StudentAI
         /// <returns>Returns true if the move was valid</returns>
         public bool IsValidMove(ChessBoard boardBeforeMove, ChessMove moveToCheck, ChessColor colorOfPlayerMoving)
         {
-            bool white=false;
-            if (colorOfPlayerMoving==ChessColor.White) white=true;
-            string stdFen = boardBeforeMove.ToPartialFenBoard();
+             string stdFen = boardBeforeMove.ToPartialFenBoard();
             char[] SRfen = FENExtensions.ToShallowRedFEN(stdFen);
-            int to=moveToCheck.To.Y*9+moveToCheck.To.X;
-            return FENExtensions.IsValidMove(SRfen,white,to);
             
-            throw (new NotImplementedException());
+            List<char[]> legalBoards = FEN.GetAvailableMoves(SRfen, colorOfPlayerMoving);
+            char[] boardToCheck = FENExtensions.Move(SRfen, moveToCheck.From.X, moveToCheck.From.Y, moveToCheck.To.X, moveToCheck.To.Y);
+            bool legal=false;
+            foreach (char[] board in legalBoards)
+            {
+                bool equal = true;
+                for (int i = 0; i < 71; i++)
+                {
+                    if (board[i] != boardToCheck[i])
+                    {
+                        equal = false;
+                        break;
+                    }
+                        
+                }
+                if (equal == true)
+                {
+                    legal = true;
+                    break;
+                }
+                    
+            }
+            //need to add a flag check 
+            return legal;
             
         }
 
