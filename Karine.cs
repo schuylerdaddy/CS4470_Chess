@@ -4,15 +4,19 @@ using System.Linq;
 using System.Text;
 using UvsChess;
 using ShallowRed;
+using System.IO;
+using System.Diagnostics;
 
 namespace StudentAI
 {
+   
+    
     public class NodeMove
     {
         public char[] board;
         public int h;
         public NodeMove parent;
-        public List<NodeMove> children;
+        public NodeMove[] children;
         public NodeMove(){
            
         }
@@ -20,7 +24,7 @@ namespace StudentAI
         public NodeMove (char[] _board, NodeMove _parent){
             board = _board;
             parent = _parent;
-            children = new List<NodeMove>();
+            children = new NodeMove[100];
         }
 
         public NodeMove(char[] _board, int _h, NodeMove _parent)
@@ -28,14 +32,14 @@ namespace StudentAI
             board = _board;
             h = _h;
             parent = _parent;
-            children = new List<NodeMove>();
+            children = new NodeMove[100];
         }
 
         public NodeMove(char[] _board)
         {
             board = _board;
             parent = null;
-            children = new List<NodeMove>();
+            children = new NodeMove[100];
         }
 
     }
@@ -55,6 +59,9 @@ namespace StudentAI
         /// <summary>
         /// Shallow Red
         /// </summary>
+        /// 
+
+     //   StreamWriter myFile = new StreamWriter("testChess.txt");
         public string Name
         {
 #if DEBUG
@@ -80,8 +87,17 @@ namespace StudentAI
             char[] boardAfterMove= miniMax(SRfen, myColor);
 
             ChessMove move = FENExtensions.GenerateMove(SRfen, boardAfterMove);
+            bool white = true;
+            if (myColor == ChessColor.White)
+                white = false;
+            if (FENExtensions.InCheck(boardAfterMove, white))
+                move.Flag = ChessFlag.Check;
+            else
+                move.Flag = ChessFlag.NoFlag;
+            //get available from opponent to check for checkmate
+
             return move;
-            throw (new NotImplementedException());
+          //  throw (new NotImplementedException());
 
         }
 
@@ -95,34 +111,55 @@ namespace StudentAI
         /// <param name="colorOfPlayerMoving">This is the color of the player who's making the move.</param>
         /// <returns>Returns true if the move was valid</returns>
         public bool IsValidMove(ChessBoard boardBeforeMove, ChessMove moveToCheck, ChessColor colorOfPlayerMoving)
-        {
-             string stdFen = boardBeforeMove.ToPartialFenBoard();
+        {            
+            string stdFen = boardBeforeMove.ToPartialFenBoard();
             char[] SRfen = FENExtensions.ToShallowRedFEN(stdFen);
-            
+            //need board after the move
             List<char[]> legalBoards = FEN.GetAvailableMoves(SRfen, colorOfPlayerMoving);
             char[] boardToCheck = FENExtensions.Move(SRfen, moveToCheck.From.X, moveToCheck.From.Y, moveToCheck.To.X, moveToCheck.To.Y);
-            bool legal=false;
+            bool legal=false; 
+            //check that move results in a legal board
             foreach (char[] board in legalBoards)
             {
                 bool equal = true;
-                for (int i = 0; i < 71; i++)
-                {
-                    if (board[i] != boardToCheck[i])
-                    {
+                for (int i = 0; i < 71; i++){
+                    if (board[i] != boardToCheck[i]){
                         equal = false;
                         break;
-                    }
-                        
+                    }                        
                 }
-                if (equal == true)
-                {
+                if (equal == true){
                     legal = true;
                     break;
-                }
-                    
+                }  
             }
-            //need to add a flag check 
+            if (!legal) 
+                return legal;
+
+            //if move is legal check the flag
+            ChessFlag testFlag = ChessFlag.NoFlag;
+            //check if move result in check for us
+            bool white = true;
+            if (colorOfPlayerMoving == ChessColor.White)
+                white = false;
+            if (FENExtensions.InCheck(boardToCheck, white))
+                testFlag = ChessFlag.Check;
+            if (testFlag != moveToCheck.Flag)
+                return false;
+            //check if checkmate
+            //getAvailable moves, if none then checkMate
+            ChessColor colorOfOpponent;
+            if (colorOfPlayerMoving == ChessColor.White)
+                colorOfOpponent = ChessColor.Black;
+            else
+                colorOfOpponent = ChessColor.White;
+            List<char[]> opponentFutureMoves = FEN.GetAvailableMoves(boardToCheck, colorOfOpponent);
+    //        if (opponentFutureMoves)
+     //           testFlag = ChessFlag.Checkmate;
+     //       if (testFlag != moveToCheck.Flag)
+     //           return false;
             return legal;
+            //throw (new NotImplementedException());
             
         }
 
@@ -148,6 +185,7 @@ namespace StudentAI
         public char[] miniMax(char[] SRFen, ChessColor color)
         {
             Char[] chosenBoard;
+
             bool white;
             if (color == ChessColor.White) white = true;
             else white = false;
@@ -167,7 +205,10 @@ namespace StudentAI
 
         public void miniMaxHelper(ref NodeMove ParentNode, int depth, bool white, char[] SRFen)
         {
-            const int MAXDEPTH = 4;
+            Stopwatch timer= new Stopwatch();
+            timer.Start();
+        //    TimeSpan time = new TimeSpan(0);
+            const int MAXDEPTH = 2;
             ChessColor color = ChessColor.White;
             if (white)
             {
@@ -177,8 +218,9 @@ namespace StudentAI
             {
                 color = ChessColor.Black;
             }
-            List<Char[]> LegalBoard = FEN.GetAvailableMoves(SRFen,color);
 
+            List<Char[]> LegalBoard = FEN.GetAvailableMoves(SRFen,color);
+            int i = 0;
             foreach (char[] ChildrenBoard in LegalBoard)
             {
                 int h;
@@ -191,14 +233,20 @@ namespace StudentAI
                 }
                 else
                     childNode = new NodeMove(ChildrenBoard,ParentNode);
-                ParentNode.children.Add(childNode);
+                ParentNode.children[i] = childNode;
+                i++;
                 if (depth < MAXDEPTH)
                 {
+                   
                     miniMaxHelper(ref childNode, depth+1, !white, ChildrenBoard);
+                   
+                 //   time = time+ timer.Elapsed;
+
                 }
 
             }
-            if (depth % 2 == 0) //get the min value for the opponent
+
+            if (depth % 2 == 0) //get the max value for the opponent
             {
                 NodeMove choice = maxValue(ParentNode.children);
                 ParentNode.h = choice.h;
@@ -212,10 +260,18 @@ namespace StudentAI
                 else choice = minValue(ParentNode.children,false);
                 ParentNode.h = choice.h;
                 if (depth == 1) { ParentNode.board = choice.board; }
-            }          
+            }
+            timer.Stop();
+            if (depth != MAXDEPTH && depth!=3)
+            {
+                Console.Write("depth:");
+                Console.WriteLine(depth);
+                Console.Write("timer:");
+                Console.WriteLine(timer.Elapsed);
+            }
         }
 
-        public NodeMove minValue(List<NodeMove> children, bool isAtTop)
+        public NodeMove minValue(NodeMove[] children, bool isAtTop)
         {
             NodeMove choice= children[0];
             int minH=choice.h;
@@ -223,55 +279,61 @@ namespace StudentAI
             if (isAtTop)
             {
                 NodeMove[] equalBoard = new NodeMove[100];
+                int countSameMin = 0;
                 int i = 0;
-                foreach (NodeMove child in children)
+                while(children[i]!=null)
                 {
-                    if (child.h == minH)
+                    if (children[i].h == minH)
                     {
-                        equalBoard[i] = child;
-                        i++;
+                        equalBoard[countSameMin] = children[i];
+                        countSameMin++;
                     }
-                    if (child.h < minH)
+                    if (children[i].h < minH)
                     {
-                        minH = child.h;
-                        choice = child;
-                        equalBoard[0] = child;
-                        i = 1;
+                        minH = children[i].h;
+                        choice = children[i];
+                        equalBoard[0] = children[i];
+                        countSameMin = 1;
                     }
+                    i++;
                 }
-                if (i > 1)
+                if (countSameMin > 1)
                 {
                     Random rnd = new Random();
-                    int value = rnd.Next(0, i);
+                    int value = rnd.Next(0, countSameMin);
                     choice = equalBoard[value];
                 }
             }
             else
             {
-                foreach (NodeMove child in children)
+                int i = 0;
+                while (children[i] != null)
                 {
-                    if (child.h < minH)
+                    if (children[i].h > minH)
                     {
-                        minH = child.h;
-                        choice = child;
+                        minH = children[i].h;
+                        choice = children[i];
                     }
+                    i++;
                 }
             }
             return choice;
         }
 
-        public NodeMove maxValue(List<NodeMove> children)
+        public NodeMove maxValue(NodeMove[] children)
         {
             NodeMove choice = children[0];
             int maxH = choice.h;
             //find min heuristics for moves in the children list
-            foreach (NodeMove child in children)
+            int i=0;
+            while (children[i] != null)
             {
-                if (child.h > maxH)
+                if (children[i].h > maxH)
                 {
-                    maxH = child.h;
-                    choice = child;
+                    maxH = children[i].h;
+                    choice = children[i];
                 }
+                i++;
             }
             return choice;
         }
@@ -328,4 +390,3 @@ namespace StudentAI
                {'r', 5},
                {'q', 10}
         };
-        #endregion
