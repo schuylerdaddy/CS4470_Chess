@@ -329,7 +329,109 @@
         public static bool InCheck(this char[] board, bool white )
         {
             int kingPos = board.GetKingPos(white);
-            return board.DiagonalCheck(white,kingPos);// || bool richardKnightMethod || bool richardAdjacentMethod
+            return board.DiagonalCheck(white, kingPos) || board.KnightCheck(white, kingPos) || board.ColRowCheck(white, kingPos);
+        }
+
+        private static bool KnightCheck(this char[] board, bool white, int pos)
+        {
+            bool check = false;
+            char enemyKnight;
+            if (white)
+            {
+                enemyKnight = 'n';
+            }
+            else
+            {
+                enemyKnight = 'N';
+            }
+            // Array of all possible attacking knight positions
+            int[] knights = new int[8] { pos - 11, pos - 19, pos - 17, pos - 7, pos + 11, pos + 19, pos + 17, pos + 7 };
+            for (int i = 0; i < knights.Length; i++)
+            {
+                int idx = knights[i];
+                // If the position is within the board range
+                if (idx > 0 && idx < 71 && idx % 9 != 8)
+                {
+                    if (board[idx] == enemyKnight)
+                    {
+                        //this.Log("In Check by Knight at pos: " + idx);
+                        check = true;
+                        break;
+                    }
+                }
+            }
+            /*
+            if (check)
+            {
+            this.Log("- We are in check by KNIGHTS!");
+            }
+            */
+            return check;
+        }
+
+        private static bool ColRowCheck(this char[] board, bool white, int kingPos)
+        {
+            bool check = false;
+            char enemyRook;
+            char enemyQueen;
+            char enemyKing;
+
+            if (white)
+            {
+                enemyRook = 'r';
+                enemyQueen = 'q';
+                enemyKing = 'k';
+            }
+            else
+            {
+                enemyRook = 'R';
+                enemyQueen = 'Q';
+                enemyKing = 'K';
+            }
+            int[] directions = new int[4] {
+                                          -9, // up
+                                           9, // down
+                                             -1, // left
+                                            1 // right
+                                            };
+            // For each direction
+            for (int i = 0; i < directions.Length; i++)
+            {
+                int shift = directions[i];
+                int pos = kingPos + shift;
+
+                //Check first space for king as well as rook and queen
+                if((pos > 0 && pos < 71 && pos % 9 != 8))
+                    if (board[pos] == enemyRook || board[pos] == enemyQueen || board[pos] == enemyKing)
+                        return true;
+
+                pos = kingPos + shift;
+
+                // Move in that direction until you hit an edge or another piece
+                while (pos > 0 && pos < 71 && pos % 9 != 8)
+                {
+                    // If you hit a rook or a queen we're in check
+                    if (board[pos] == enemyRook || board[pos] == enemyQueen)
+                    {
+                        check = true;
+                        break;
+                    }
+                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
+                    else if (board[pos] != '_')
+                    {
+                        // check is already false
+                        break;
+                    }
+                    pos += shift;
+                }
+            }
+            /*
+            if (check)
+            {
+            this.Log("- We are in check on Col/Row!!");
+            }
+            */
+            return check;
         }
 
         private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
