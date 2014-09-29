@@ -1,15 +1,24 @@
+    using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+//using System.Threading.Tasks;
+using UvsChess;
+
+namespace ShallowRed
+{
     public static class FENExtensions
     {
         static public ChessMove GenerateMove(this char[] from, char[] to)
         {
-            int[] pos = new int[2]; 
+            int[] pos = new int[2];
 
             int changes = 0;
-            for(int i = 0; i< from.Length && changes<2;++i)
+            for (int i = 0; i < from.Length && changes < 2; ++i)
             {
-                if(from[i] != to[i])
+                if (from[i] != to[i])
                 {
-                        pos[changes++] = i;
+                    pos[changes++] = i;
                 }
             }
 
@@ -52,9 +61,9 @@
         static public char[] MovePawn(this char[] board, int from, int to, bool white)
         {
             char[] b = (char[])board.Clone();
-            if(white)
+            if (white)
             {
-                b[to] = (to < 8) ? 'Q' : 'P'; 
+                b[to] = (to < 8) ? 'Q' : 'P';
                 b[from] = '_';
             }
             else
@@ -74,7 +83,7 @@
 
         static private bool TakesOpponentPiece(this char[] board, bool white, int to)
         {
-            return !white?(Char.IsUpper(board[to])):(Char.IsLower(board[to]));
+            return !white ? (Char.IsUpper(board[to])) : (Char.IsLower(board[to]));
         }
 
         static private bool EmptySpace(this char[] board, bool white, int to)
@@ -118,23 +127,23 @@
             {
                 if (IsValidMove(board, white, bse + idx))
                 {
-                    moves.Add(Move(board, i, bse+idx));
-                    if (TakesOpponentPiece(board, white, bse+idx))
+                    moves.Add(Move(board, i, bse + idx));
+                    if (TakesOpponentPiece(board, white, bse + idx))
                         break;
                 }
                 else break;
             }
 
-            
+
             idx = i % 9;
             bse = i - idx;
 
             while (++idx < 8)
             {
-                if (IsValidMove(board, white, bse+idx))
+                if (IsValidMove(board, white, bse + idx))
                 {
-                    moves.Add(Move(board, i, bse+idx));
-                    if (TakesOpponentPiece(board, white, bse+idx))
+                    moves.Add(Move(board, i, bse + idx));
+                    if (TakesOpponentPiece(board, white, bse + idx))
                         break;
                 }
                 else break;
@@ -236,7 +245,7 @@
                 if (idx % 9 != 8 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if(!temp.InCheck(white))
+                    if (!temp.InCheck(white))
                         moves.Add(temp);
                 }
                 if (board.IsValidMove(white, ++idx))
@@ -252,7 +261,7 @@
                         moves.Add(temp);
                 }
             }
-                
+
             idx = i + 1;
             if (idx % 9 != 0 && board.IsValidMove(white, idx))
             {
@@ -290,7 +299,7 @@
                         moves.Add(temp);
                 }
             }
-            
+
         }
 
         static public void AddPawnMoves(this char[] board, bool white, int i, ref List<char[]> moves)
@@ -300,33 +309,33 @@
                 if (i / 9 == 1)
                 {
                     if (board[i + 18] == '_' && board[i + 9] == '_')
-                        moves.Add(board.MovePawn(i, i + 18,false));
+                        moves.Add(board.MovePawn(i, i + 18, false));
                 }
 
                 if (board[i + 9] == '_')
-                    moves.Add(board.MovePawn(i, i + 9,false));
-                if(Char.IsUpper(board[i+8]))
-                    moves.Add(board.MovePawn(i, i + 8,false));
+                    moves.Add(board.MovePawn(i, i + 9, false));
+                if (Char.IsUpper(board[i + 8]))
+                    moves.Add(board.MovePawn(i, i + 8, false));
                 if (i < 61 && Char.IsUpper(board[i + 10]))
-                    moves.Add(board.MovePawn(i, i + 10,false));
+                    moves.Add(board.MovePawn(i, i + 10, false));
             }
             else
             {
                 if (i / 9 == 6)
                 {
                     if (board[i - 18] == '_' && board[i - 9] == '_')
-                        moves.Add(board.MovePawn(i, i - 18,true));
+                        moves.Add(board.MovePawn(i, i - 18, true));
                 }
                 if (board[i - 9] == '_')
                     moves.Add(board.MovePawn(i, i - 9, true));
                 if (Char.IsLower(board[i - 8]))
                     moves.Add(board.MovePawn(i, i - 8, true));
                 if (1 > 10 && Char.IsLower(board[i - 10]))
-                    moves.Add(board.MovePawn(i, i - 10,true));
+                    moves.Add(board.MovePawn(i, i - 10, true));
             }
         }
 
-        public static bool InCheck(this char[] board, bool white )
+        public static bool InCheck(this char[] board, bool white)
         {
             int kingPos = board.GetKingPos(white);
             return board.DiagonalCheck(white, kingPos) || board.KnightCheck(white, kingPos) || board.ColRowCheck(white, kingPos);
@@ -401,7 +410,7 @@
                 int pos = kingPos + shift;
 
                 //Check first space for king as well as rook and queen
-                if((pos > 0 && pos < 71 && pos % 9 != 8))
+                if ((pos > 0 && pos < 71 && pos % 9 != 8))
                     if (board[pos] == enemyRook || board[pos] == enemyQueen || board[pos] == enemyKing)
                         return true;
 
@@ -436,124 +445,164 @@
 
         private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
         {
-            int idx =  kingPos+ 8;
-            int idx2 = idx+2;
+#region diag_upleft
 
-            if(idx < 71)
+            int idx = kingPos + 8;
+            bool brk = false;
+
+            if (idx < 71)
             {
-                if(idx%9 != 8)
+                if (idx % 9 != 8)
                 {
-                    if (white)
-                    {
-                        if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
-                            return true;
-                    }
+                    if (white && board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
+                        return true;
                     else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K' || board[idx] == 'P')
                         return true;
+                    else if (board[idx] != '_')
+                        brk = true;
                 }
-
-                if(idx2 % 9 != 8)
-                {
-                    if (white)
-                    {
-                        if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
-                            return true;
-                    }
-                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K' || board[idx2] == 'P')
-                        return true;
-
-                }
+                else
+                    brk = true;
 
                 idx += 8;
-                idx2 +=  10;
-
-                while(idx<71)
+                while (!brk && idx < 71)
                 {
                     if (idx % 9 != 8)
                     {
-                        if (white)
-                        {
-                            if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
-                                return true;
-                        }
+                        if (white && board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
+                            return true;
                         else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
                             return true;
+                        else if(board[idx] != '_')
+                            brk = true;
                     }
-
-                    if (idx2<71 && idx2 % 9 != 8)
-                    {
-                        if (white)
-                        {
-                            if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
-                                return true;
-                        }
-                        else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
-                             return true;
-                    }
-
+                    else
+                        brk = true;
                     idx += 8;
-                    idx2 += 10;
                 }
             }
 
+#endregion
+
+#region diag_upright
+
+            int idx2 = kingPos+8;
+            brk = false;
+
+            if (idx2 < 71)
+            {
+                if (idx2 % 9 != 8)
+                {
+                    if (white && board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
+                        return true;
+                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K' || board[idx2] == 'P')
+                        return true;
+                    else if (board[idx2] != '_')
+                        brk = true;
+                }
+                else
+                    brk = true;
+            }
+               
+            idx +=10;
+
+            while (!brk && idx2 < 71)
+            {
+                if (idx2 % 9 != 8)
+                {
+                    if (white && board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
+                        return true;
+                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
+                        return true;
+                    else if (board[idx2] != '_')
+                        brk = true;
+                }
+                else
+                    brk = true;
+                idx2 += 10;
+            }
+            
+
+#endregion
+
+#region down_left
+
             idx = kingPos - 10;
-            idx2 = idx + 2;
+            brk = false;
 
             if (idx > -1)
             {
                 if (idx % 9 != 8)
                 {
-                    if (white)
-                    {
-                        if(board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k' || board[idx] == 'p')
-                            return true;
-                    }
-                    else if(board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
+                    if (white && board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k' || board[idx] == 'p')
                         return true;
+                    else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
+                        return true;
+                    else
+                        brk = true;
                 }
+                else
+                    brk = true;
+            }
+            idx -= 10;
 
+            while(!brk && idx> -1)
+            {
+                if (idx % 9 != 8)
+                {
+                    if (white && board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
+                        return true;
+                    else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
+                        return true;
+                    else
+                        brk = true;
+                }
+                else
+                    brk = true;
+                idx -= 10;
+            }
+
+#endregion 
+
+            #region down_right
+
+            idx2 = kingPos-8;
+            brk = false;
+
+            if (idx2 > -1)
+            {
                 if (idx2 % 9 != 8)
                 {
-                    if (white)
-                    {
-                        if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k' || board[idx2] == 'p')
-                            return true;
-                    }
+                    if (white && board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k' || board[idx2] == 'p')
+                        return true;
                     else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
                         return true;
+                    else
+                        brk = true;
                 }
+                else
+                    brk = true;
 
-                idx -= 10;
                 idx2 -= 8;
-
-                while (idx > -1)
+                while (!brk && idx2 > -1)
                 {
                     if (idx % 9 != 8)
                     {
-                        if (white)
-                        {
-                            if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
-                                return true;
-                        }
-                        else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
+                        if (white && board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
                             return true;
-                    }
-
-                    if (idx > -1 && idx2 % 9 != 8)
-                    {
-                        if (white)
-                        {
-                            if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
-                                return true;
-                        }
                         else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
                             return true;
+                        else
+                            brk = true;
                     }
-
-                    idx -= 10;
+                    else
+                        brk = true;
                     idx2 -= 8;
                 }
             }
+            #endregion
+
+            //default
             return false;
         }
 
@@ -638,3 +687,4 @@
         }
 
     }
+}
