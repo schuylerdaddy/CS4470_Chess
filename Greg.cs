@@ -209,29 +209,31 @@ namespace ShallowRed
 
         static public void AddKnightMoves(this char[] board, bool white, int i, ref List<char[]> moves)
         {
+            int originRow = i % 9;
             int idx = i + 19;
-            if (idx < 71 && idx % 9 != 0 && board.IsValidMove(white, idx))
+
+            if (idx < 71 && originRow <7  && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
             idx = i + 17;
-            if (idx < 71 && idx % 9 != 8 && board.IsValidMove(white, idx))
+            if (idx < 71 && originRow>0  && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
             idx = i + 11;
-            if (idx < 71 && idx % 9 != 0 && board.IsValidMove(white, idx))
+            if (idx < 71 && originRow < 6 && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
             idx = i + 7;
-            if (idx < 71 && idx % 9 != 8 && board.IsValidMove(white, idx))
+            if (idx < 71 && originRow % 9 > 1 && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
             idx = i - 19;
-            if (idx > -1 && idx % 9 != 8 && board.IsValidMove(white, idx))
+            if (idx > -1 && originRow > 0 && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
             idx = i - 17;
-            if (idx > -1 && idx % 9 != 0 && board.IsValidMove(white, idx))
+            if (idx > -1 && originRow <7 && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
             idx = i - 11;
-            if (idx > -1 && idx % 9 != 8 && board.IsValidMove(white, idx))
+            if (idx > -1 && originRow > 1 && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
             idx = i - 7;
-            if (idx > -1 && idx % 9 != 0 && board.IsValidMove(white, idx))
+            if (idx > -1 && originRow < 6 && board.IsValidMove(white, idx))
                 moves.Add(board.Move(i, idx));
         }
 
