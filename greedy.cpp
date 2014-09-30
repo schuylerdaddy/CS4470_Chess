@@ -111,17 +111,56 @@ namespace StudentAI
         /// <param name="colorOfPlayerMoving">This is the color of the player who's making the move.</param>
         /// <returns>Returns true if the move was valid</returns>
         public bool IsValidMove(ChessBoard boardBeforeMove, ChessMove moveToCheck, ChessColor colorOfPlayerMoving)
-        {
-
-            bool white = false;
-            if (colorOfPlayerMoving == ChessColor.White) white = true;
+        {            
             string stdFen = boardBeforeMove.ToPartialFenBoard();
             char[] SRfen = FENExtensions.ToShallowRedFEN(stdFen);
-            int to = (moveToCheck.To.Y * 9) + moveToCheck.To.X;
-            return FENExtensions.IsValidMove(SRfen, white, to);
+            //need board after the move
+            List<char[]> legalBoards = FEN.GetAvailableMoves(SRfen, colorOfPlayerMoving);
+            char[] boardToCheck = FENExtensions.Move(SRfen, moveToCheck.From.X, moveToCheck.From.Y, moveToCheck.To.X, moveToCheck.To.Y);
+            bool legal=false; 
+            //check that move results in a legal board
+            foreach (char[] board in legalBoards)
+            {
+                bool equal = true;
+                for (int i = 0; i < 71; i++){
+                    if (board[i] != boardToCheck[i]){
+                        equal = false;
+                        break;
+                    }                        
+                }
+                if (equal == true){
+                    legal = true;
+                    break;
+                }  
+            }
+            if (!legal) 
+                return legal;
 
-            throw (new NotImplementedException());
-
+            //if move is legal check the flag
+            ChessFlag testFlag = ChessFlag.NoFlag;
+            //check if move result in check for us
+            bool white = true;
+            if (colorOfPlayerMoving == ChessColor.White)
+                white = false;
+            if (FENExtensions.InCheck(boardToCheck, white))
+                testFlag = ChessFlag.Check;
+            if (testFlag != moveToCheck.Flag)
+                return false;
+            //check if checkmate
+            //getAvailable moves, if none then checkMate
+            ChessColor colorOfOpponent;
+            if (colorOfPlayerMoving == ChessColor.White)
+                colorOfOpponent = ChessColor.Black;
+            else
+                colorOfOpponent = ChessColor.White;
+            List<char[]> opponentFutureMoves = FEN.GetAvailableMoves(boardToCheck, colorOfOpponent);
+    //        if (opponentFutureMoves)
+     //           testFlag = ChessFlag.Checkmate;
+     //       if (testFlag != moveToCheck.Flag)
+     //           return false;
+            return legal;
+            //throw (new NotImplementedException());
+            
         }
 
         public string convertToShallowRedForm(string originalFen)
