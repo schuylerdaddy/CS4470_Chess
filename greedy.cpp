@@ -13,11 +13,13 @@ namespace StudentAI
         public int h;
         public NodeMove parent;
         public List<NodeMove> children;
-        public NodeMove(){
-           
+        public NodeMove()
+        {
+
         }
 
-        public NodeMove (char[] _board, NodeMove _parent){
+        public NodeMove(char[] _board, NodeMove _parent)
+        {
             board = _board;
             parent = _parent;
             children = new List<NodeMove>();
@@ -73,20 +75,33 @@ namespace StudentAI
         /// <returns> Returns the best chess move the player has for the given chess board</returns>
         public ChessMove GetNextMove(ChessBoard board, ChessColor myColor)
         {
-            this.Log("Let the Game Begin!");
+            //this.Log("Let the Game Begin!");
             //convert Fen for to shallow red fen form
-            String originalFenBoard=board.ToPartialFenBoard();
-            char[] SRfen= FENExtensions.ToShallowRedFEN(originalFenBoard);
+            String originalFenBoard = board.ToPartialFenBoard();
+            char[] SRfen = FENExtensions.ToShallowRedFEN(originalFenBoard);
 
-            char[] boardAfterMove= greedy(SRfen, myColor);
+            char[] boardAfterMove = greedy(SRfen, myColor);
             //char[] boardAfterMove = miniMax(SRfen, myColor);
 
             ChessMove move = FENExtensions.GenerateMove(SRfen, boardAfterMove);
+            this.Log("Our Color:" + ChessColor.White.ToString());
+            bool white = (myColor == ChessColor.White) ? false : true;
+            this.Log("Enemy team is: " + white.ToString());
+            if (InCheck(boardAfterMove, white))
+            {
+                this.Log("They're in check!!");
+                move.Flag = ChessFlag.Check;
+            }
+            else
+            {
+                this.Log("They're not in check");
+                move.Flag = ChessFlag.NoFlag;
+            }
             return move;
 
         }
 
-  
+
 
         /// <summary>
         /// Validates a move. The framework uses this to validate the opponents move.
@@ -98,21 +113,22 @@ namespace StudentAI
         public bool IsValidMove(ChessBoard boardBeforeMove, ChessMove moveToCheck, ChessColor colorOfPlayerMoving)
         {
 
-            bool white=false;
-            if (colorOfPlayerMoving==ChessColor.White) white=true;
+            bool white = false;
+            if (colorOfPlayerMoving == ChessColor.White) white = true;
             string stdFen = boardBeforeMove.ToPartialFenBoard();
             char[] SRfen = FENExtensions.ToShallowRedFEN(stdFen);
-            int to= (moveToCheck.To.Y * 9) + moveToCheck.To.X;
-            return FENExtensions.IsValidMove(SRfen,white,to);
-            
+            int to = (moveToCheck.To.Y * 9) + moveToCheck.To.X;
+            return FENExtensions.IsValidMove(SRfen, white, to);
+
             throw (new NotImplementedException());
-            
+
         }
 
-        public string convertToShallowRedForm (string originalFen)
+        public string convertToShallowRedForm(string originalFen)
         {
-            string newForm="";
-            foreach (char c in originalFen ){
+            string newForm = "";
+            foreach (char c in originalFen)
+            {
                 if (!char.IsDigit(c)) newForm += c;
                 else
                 {
@@ -125,7 +141,7 @@ namespace StudentAI
                 }
 
             }
-           return newForm;
+            return newForm;
         }
 
         public char[] miniMax(char[] SRFen, ChessColor color)
@@ -148,25 +164,22 @@ namespace StudentAI
             return chosenBoard;
 
         }
-        
+
         public char[] greedy(char[] SRFen, ChessColor color)
         {
-            this.Log("### Greedy v2 ###");
             Char[] chosenBoard;
             bool white;
             //if (color == ChessColor.White) white = true;
             //else white = false;
-           // List<Char[]> legalBoards= FEN.GetAvailableMoves (SRFen, white); //AvailableMoves defined by Greg
+            // List<Char[]> legalBoards= FEN.GetAvailableMoves (SRFen, white); //AvailableMoves defined by Greg
             //need to build tree
             NodeMove init = new NodeMove(SRFen);
-            GameTree Tree=new GameTree(init);
+            GameTree Tree = new GameTree(init);
 
             //const int MAXDEPTH = 4;
             List<Char[]> LegalBoard = FEN.GetAvailableMoves(SRFen, color);
             List<Char[]> EqualBoard = new List<Char[]>();
-            int numMax = 0;
-            int max = 0;
-            int finalHeuristic = 0;
+
             chosenBoard = LegalBoard[0];
             if (color == ChessColor.White)
             {
@@ -183,13 +196,13 @@ namespace StudentAI
                 NodeMove childNode;
                 h = GetHeuristicValue(ChildrenBoard, color);
                 childNode = new NodeMove(ChildrenBoard, h, Tree.head);
-                
+
                 Tree.head.children.Add(childNode);
             }
 
             NodeMove choice;
             List<NodeMove> choices = maxValues(Tree.head.children);
-           
+
             if (choices.Count() > 1)
             {
                 Random rnd = new Random();
@@ -229,11 +242,11 @@ namespace StudentAI
                     childNode = new NodeMove(ChildrenBoard, h, ParentNode);
                 }
                 else
-                    childNode = new NodeMove(ChildrenBoard,ParentNode);
+                    childNode = new NodeMove(ChildrenBoard, ParentNode);
                 ParentNode.children.Add(childNode);
                 if (depth < MAXDEPTH)
                 {
-                    miniMaxHelper(ref childNode, depth+1, !white, ChildrenBoard);
+                    miniMaxHelper(ref childNode, depth + 1, !white, ChildrenBoard);
                 }
 
             }
@@ -247,17 +260,17 @@ namespace StudentAI
             {
                 //get the max
                 NodeMove choice;
-                if (depth == 1) choice = minValue(ParentNode.children, true); 
-                else choice = minValue(ParentNode.children,false);
+                if (depth == 1) choice = minValue(ParentNode.children, true);
+                else choice = minValue(ParentNode.children, false);
                 ParentNode.h = choice.h;
                 if (depth == 1) { ParentNode.board = choice.board; }
-            }          
+            }
         }
 
         public NodeMove minValue(List<NodeMove> children, bool isAtTop)
         {
-            NodeMove choice= children[0];
-            int minH=choice.h;
+            NodeMove choice = children[0];
+            int minH = choice.h;
             //find min heuristics for moves in the children list
             if (isAtTop)
             {
@@ -339,7 +352,6 @@ namespace StudentAI
 
         public bool InCheck(char[] board, bool white)
         {
-            //this.Log("Is Anyone In Check?");
             int kingPos = GetKingPos(board, white);
             bool check = DiagonalCheck(board, white, kingPos) || KnightCheck(board, white, kingPos) || ColRowCheck(board, white, kingPos);
             /*
@@ -350,11 +362,12 @@ namespace StudentAI
                 this.Log("- Nope, no check here.");
             }
             */
-            return check; 
+            return check;
         }
 
         private bool KnightCheck(char[] board, bool white, int pos)
         {
+            this.Log("Checking knights");
             bool check = false;
             char enemyKnight;
 
@@ -362,23 +375,23 @@ namespace StudentAI
 
             // Array of all possible attacking knight positions
             int[] knights = new int[8] { pos - 11, pos - 19, pos - 17, pos - 7, pos + 11, pos + 19, pos + 17, pos + 7 };
-            
+
             for (int i = 0; i < knights.Length; i++)
-            {   
+            {
                 int idx = knights[i];
-                
+
                 // If the position is within the board range
                 if (idx > 0 && idx < 71 && idx % 9 != 8)
                 {
                     if (board[idx] == enemyKnight)
                     {
-                        //this.Log("In Check by Knight at pos: " + idx);
+                        this.Log("In Check by Knight at pos: " + idx);
                         check = true;
                         break;
                     }
                 }
             }
-            
+
             /*
             if (check)
             {
@@ -393,13 +406,16 @@ namespace StudentAI
             bool check = false;
             char enemyRook;
             char enemyQueen;
+            string color;
             if (white)
             {
+                color = "White";
                 enemyRook = 'r';
                 enemyQueen = 'q';
             }
             else
             {
+                color = "Black";
                 enemyRook = 'R';
                 enemyQueen = 'Q';
             }
@@ -416,18 +432,19 @@ namespace StudentAI
             {
                 int shift = directions[i];
                 int pos = kingPos + shift;
-                
+
                 // Move in that direction until you hit an edge or another piece
                 while (pos > 0 && pos < 71 && pos % 9 != 8)
                 {
                     // If you hit a rook or a queen we're in check
                     if (board[pos] == enemyRook || board[pos] == enemyQueen)
                     {
+                        this.Log(" - " + color + " is in check on ColRow from " + pos.ToString());
                         check = true;
                         break;
                     }
                     // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
-                    else if (board[pos] != '_') 
+                    else if (board[pos] != '_')
                     {
                         // check is already false
                         break;
@@ -436,136 +453,124 @@ namespace StudentAI
                 }
             }
 
-            /*
+            
             if (check)
             {
-                this.Log("- We are in check on Col/Row!!");
+                
             }
-            */
+            
             return check;
         }
 
         private bool DiagonalCheck(char[] board, bool white, int kingPos)
         {
-            int idx = kingPos + 8;
-            int idx2 = idx + 2;
-
-            if (idx < 71)
+            bool check = false;
+            char enemyBishop;
+            char enemyPawn;
+            char enemyQueen;
+            int[] advanceDiagonals;
+            int[] retreatDiagonals;
+            string color;
+            if (white)
             {
-                if (idx % 9 != 8)
+                color = "White";
+                this.Log("Checking Diagonals for White");
+                enemyBishop = 'b';
+                enemyQueen = 'q';
+                enemyPawn = 'p';
+                advanceDiagonals = new int[2] {
+                    -10, // up left
+                    -8  // up right
+                };
+
+                retreatDiagonals = new int[2] {
+                    10, // down left
+                    8  // down right
+                };
+            }
+            else
+            {
+                color = "Black";
+                this.Log("Checking Diagonals for Black");
+                enemyBishop = 'B';
+                enemyQueen = 'Q';
+                enemyPawn = 'P';
+
+                advanceDiagonals = new int[2] {
+                    10, // down left
+                    8  // down right
+                };
+
+                retreatDiagonals = new int[2] {
+                    -10, // up left
+                    -8  // up right
+                };
+            }
+
+            
+
+            // For each up direction
+            for (int i = 0; i < advanceDiagonals.Length; i++)
+            {
+                int shift = advanceDiagonals[i];
+                int pos = kingPos + shift;
+
+                // Check Pawns:
+                if (board[pos] == enemyPawn)x
                 {
-                    if (white)
-                    {
-                        if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
-                            return true;
-                    }
-                    else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K' || board[idx] == 'P')
-                        return true;
+                    this.Log(" - " + color + " king is in check by pawn from pos " + pos);
+                    check = true;
+                    break;
                 }
 
-                if (idx2 % 9 != 8)
+                // Move in that direction until you hit an edge or another piece
+                while (pos > 0 && pos < 71 && pos % 9 != 8)
                 {
-                    if (white)
+                    // If you hit a rook or a queen we're in check
+                    if (board[pos] == enemyBishop || board[pos] == enemyQueen)
                     {
-                        if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
-                            return true;
+                        this.Log(" - " + color + " king (at pos " + kingPos + ") is in check on Diagonals from pos " + pos);
+                        check = true;
+                        break;
                     }
-                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K' || board[idx2] == 'P')
-                        return true;
-
-                }
-
-                idx += 8;
-                idx2 += 10;
-
-                while (idx < 71)
-                {
-                    if (idx % 9 != 8)
+                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
+                    else if (board[pos] != '_')
                     {
-                        if (white)
-                        {
-                            if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
-                                return true;
-                        }
-                        else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
-                            return true;
+                        this.Log("We hit a piece @ " + pos.ToString());
+                        // check is already false
+                        break;
                     }
-
-                    if (idx2 < 71 && idx2 % 9 != 8)
-                    {
-                        if (white)
-                        {
-                            if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
-                                return true;
-                        }
-                        else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
-                            return true;
-                    }
-
-                    idx += 8;
-                    idx2 += 10;
+                    pos += shift;
                 }
             }
 
-            idx = kingPos - 10;
-            idx2 = idx + 2;
-
-            if (idx > -1)
+            // For each up direction
+            for (int i = 0; i < retreatDiagonals.Length; i++)
             {
-                if (idx % 9 != 8)
+                int shift = retreatDiagonals[i];
+                int pos = kingPos + shift;
+
+                // Move in that direction until you hit an edge or another piece
+                while (pos > 0 && pos < 71 && pos % 9 != 8)
                 {
-                    if (white)
+                    // If you hit a rook or a queen we're in check
+                    if (board[pos] == enemyBishop || board[pos] == enemyQueen)
                     {
-                        if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k' || board[idx] == 'p')
-                            return true;
+                        this.Log(" - " + color + " king (at pos " + kingPos + ")  is in check on Diagonals from pos " + pos);
+                        check = true;
+                        break;
                     }
-                    else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
-                        return true;
-                }
-
-                if (idx2 % 9 != 8)
-                {
-                    if (white)
+                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
+                    else if (board[pos] != '_')
                     {
-                        if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k' || board[idx2] == 'p')
-                            return true;
+                        // check is already false
+                        break;
                     }
-                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
-                        return true;
-                }
-
-                idx -= 10;
-                idx2 -= 8;
-
-                while (idx > -1)
-                {
-                    if (idx % 9 != 8)
-                    {
-                        if (white)
-                        {
-                            if (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k')
-                                return true;
-                        }
-                        else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
-                            return true;
-                    }
-
-                    if (idx > -1 && idx2 % 9 != 8)
-                    {
-                        if (white)
-                        {
-                            if (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k')
-                                return true;
-                        }
-                        else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
-                            return true;
-                    }
-
-                    idx -= 10;
-                    idx2 -= 8;
+                    pos += shift;
                 }
             }
-            return false;
+
+            return check;
         }
 
         private int GetKingPos(char[] board, bool white)
@@ -591,9 +596,9 @@ namespace StudentAI
         /// <returns>integer representing the heuristic</returns>
         private int GetHeuristicValue(char[] boardState, ChessColor color)
         {
-           /* Random rnd=new Random();
-            int value = rnd.Next(1, 15);
-            return value;*/
+            /* Random rnd=new Random();
+             int value = rnd.Next(1, 15);
+             return value;*/
             //this.Log("HEURISTIC");
             //this.Log("Color: " + color);
             //bool self.InCheck(boardState, )
@@ -627,7 +632,7 @@ namespace StudentAI
                 return blackValue - whiteValue;
         }
 
-        private  Dictionary<char, int> pieceValues = new Dictionary<char, int>
+        private Dictionary<char, int> pieceValues = new Dictionary<char, int>
         {
                {'p', 1},
                {'n', 3},
