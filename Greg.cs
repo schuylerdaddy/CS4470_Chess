@@ -443,13 +443,11 @@ namespace ShallowRed
             return check;
         }
 
-        private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
+      private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
         {
-#region diag_upleft
-
+            #region diag_upleft
             int idx = kingPos + 8;
             bool brk = false;
-
             if (idx < 71)
             {
                 if (idx % 9 != 8)
@@ -463,7 +461,6 @@ namespace ShallowRed
                 }
                 else
                     brk = true;
-
                 idx += 8;
                 while (!brk && idx < 71)
                 {
@@ -473,7 +470,7 @@ namespace ShallowRed
                             return true;
                         else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
                             return true;
-                        else if(board[idx] != '_')
+                        else if (board[idx] != '_')
                             brk = true;
                     }
                     else
@@ -481,14 +478,10 @@ namespace ShallowRed
                     idx += 8;
                 }
             }
-
-#endregion
-
-#region diag_upright
-
-            int idx2 = kingPos+8;
+            #endregion
+            #region diag_upright
+            int idx2 = kingPos + 8;
             brk = false;
-
             if (idx2 < 71)
             {
                 if (idx2 % 9 != 8)
@@ -503,9 +496,7 @@ namespace ShallowRed
                 else
                     brk = true;
             }
-               
-            idx +=10;
-
+            idx += 10;
             while (!brk && idx2 < 71)
             {
                 if (idx2 % 9 != 8)
@@ -521,15 +512,10 @@ namespace ShallowRed
                     brk = true;
                 idx2 += 10;
             }
-            
-
-#endregion
-
-#region down_left
-
+            #endregion
+            #region down_left
             idx = kingPos - 10;
             brk = false;
-
             if (idx > -1)
             {
                 if (idx % 9 != 8)
@@ -538,15 +524,14 @@ namespace ShallowRed
                         return true;
                     else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
                         return true;
-                    else
+                    else if (board[idx] != '_')
                         brk = true;
                 }
-                else
+                else 
                     brk = true;
             }
             idx -= 10;
-
-            while(!brk && idx> -1)
+            while (!brk && idx > -1)
             {
                 if (idx % 9 != 8)
                 {
@@ -554,21 +539,18 @@ namespace ShallowRed
                         return true;
                     else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
                         return true;
-                    else
+                    else if (board[idx] != '_')
                         brk = true;
                 }
-                else
+                else 
                     brk = true;
                 idx -= 10;
             }
-
-#endregion 
+            #endregion
 
             #region down_right
-
-            idx2 = kingPos-8;
+            idx2 = kingPos - 8;
             brk = false;
-
             if (idx2 > -1)
             {
                 if (idx2 % 9 != 8)
@@ -582,7 +564,6 @@ namespace ShallowRed
                 }
                 else
                     brk = true;
-
                 idx2 -= 8;
                 while (!brk && idx2 > -1)
                 {
@@ -601,7 +582,6 @@ namespace ShallowRed
                 }
             }
             #endregion
-
             //default
             return false;
         }
