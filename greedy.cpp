@@ -91,6 +91,11 @@ namespace StudentAI
             {
                 this.Log("They're in check!!");
                 move.Flag = ChessFlag.Check;
+                List<char[]> possibleOpponentMove = FEN.GetAvailableMoves(boardAfterMove, white ? ChessColor.White : ChessColor.Black);
+                if (possibleOpponentMove.Count == 0) move.Flag = ChessFlag.Checkmate;
+            }
+            else
+                move.Flag = ChessFlag.NoFlag;
             }
             else
             {
