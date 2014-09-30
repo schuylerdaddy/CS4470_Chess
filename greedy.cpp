@@ -525,6 +525,7 @@ namespace StudentAI
                 enemyBishop = 'b';
                 enemyQueen = 'q';
                 enemyPawn = 'p';
+                enemyKing = 'k';
                 advanceDiagonals = new int[2] {
                     -10, // up left
                     -8  // up right
@@ -542,6 +543,7 @@ namespace StudentAI
                 enemyBishop = 'B';
                 enemyQueen = 'Q';
                 enemyPawn = 'P';
+                enemyKing = 'K';
 
                 advanceDiagonals = new int[2] {
                     10, // down left
@@ -563,9 +565,9 @@ namespace StudentAI
                 int pos = kingPos + shift;
 
                 // Check Pawns:
-                if (board[pos] == enemyPawn)
+                if (board[pos] == enemyPawn || board[pos] == enemyKing)
                 {
-                    this.Log(" - " + color + " king is in check by pawn from pos " + pos);
+                    this.Log(" - " + color + " king is in check by pawn or king from pos " + pos);
                     check = true;
                     break;
                 }
