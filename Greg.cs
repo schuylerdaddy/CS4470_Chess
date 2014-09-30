@@ -523,147 +523,107 @@ namespace ShallowRed
             return check;
         }
 
-        private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
+               private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
         {
-            #region diag_upleft
-            int idx = kingPos + 8;
-            bool brk = false;
-            if (idx < 71)
+            bool check = false;
+            char enemyBishop;
+            char enemyPawn;
+            char enemyQueen;
+            char enemyKing;
+            int[] advanceDiagonals;
+            int[] retreatDiagonals;
+            string color;
+            if (white)
             {
-                if (idx % 9 != 8)
+                color = "White";
+                //this.Log("Checking Diagonals for White");
+                enemyBishop = 'b';
+                enemyQueen = 'q';
+                enemyPawn = 'p';
+                enemyKing = 'k';
+                advanceDiagonals = new int[2] {
+-10, // up left
+-8 // up right
+};
+                retreatDiagonals = new int[2] {
+10, // down left
+8 // down right
+};
+            }
+            else
+            {
+                color = "Black";
+                //this.Log("Checking Diagonals for Black");
+                enemyBishop = 'B';
+                enemyQueen = 'Q';
+                enemyPawn = 'P';
+                enemyKing = 'K';
+                advanceDiagonals = new int[2] {
+10, // down left
+8 // down right
+};
+                retreatDiagonals = new int[2] {
+-10, // up left
+-8 // up right
+};
+            }
+            // For each up direction
+            for (int i = 0; i < advanceDiagonals.Length; i++)
+            {
+                int shift = advanceDiagonals[i];
+                int pos = kingPos + shift;
+                // Check Pawns:
+                if (board[pos] == enemyPawn || board[pos] == enemyKing)
                 {
-                    if (white && (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k'))
-                        return true;
-                    else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K' || board[idx] == 'P')
-                        return true;
-                    else if (board[idx] != '_')
-                        brk = true;
+                  //  this.Log(" - " + color + " king is in check by pawn or king from pos " + pos);
+                    check = true;
+                    break;
                 }
-                else
-                    brk = true;
-                idx += 8;
-                while (!brk && idx < 71)
+                // Move in that direction until you hit an edge or another piece
+                while (pos > 0 && pos < 71 && pos % 9 != 8)
                 {
-                    if (idx % 9 != 8)
+                    // If you hit a rook or a queen we're in check
+                    if (board[pos] == enemyBishop || board[pos] == enemyQueen)
                     {
-                        if (white && (board[idx] == 'q' || board[idx] == 'b'))
-                            return true;
-                        else if (board[idx] == 'Q' || board[idx] == 'B')
-                            return true;
-                        else if (board[idx] != '_')
-                            brk = true;
+                    //    this.Log(" - " + color + " king (at pos " + kingPos + ") is in check on Diagonals from pos " + pos);
+                        check = true;
+                        break;
                     }
-                    else
-                        brk = true;
-                    idx += 8;
-                }
-            }
-            #endregion
-            #region diag_upright
-            int idx2 = kingPos + 8;
-            brk = false;
-            if (idx2 < 71)
-            {
-                if (idx2 % 9 != 8)
-                {
-                    if (white && (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k'))
-                        return true;
-                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K' || board[idx2] == 'P')
-                        return true;
-                    else if (board[idx2] != '_')
-                        brk = true;
-                }
-                else
-                    brk = true;
-            }
-            idx += 10;
-            while (!brk && idx2 < 71)
-            {
-                if (idx2 % 9 != 8)
-                {
-                    if (white && (board[idx2] == 'q' || board[idx2] == 'b'))
-                        return true;
-                    else if (board[idx2] == 'Q' || board[idx2] == 'B')
-                        return true;
-                    else if (board[idx2] != '_')
-                        brk = true;
-                }
-                else
-                    brk = true;
-                idx2 += 10;
-            }
-            #endregion
-            #region down_left
-            idx = kingPos - 10;
-            brk = false;
-            if (idx > -1)
-            {
-                if (idx % 9 != 8)
-                {
-                    if (white && (board[idx] == 'q' || board[idx] == 'b' || board[idx] == 'k' || board[idx] == 'p'))
-                        return true;
-                    else if (board[idx] == 'Q' || board[idx] == 'B' || board[idx] == 'K')
-                        return true;
-                    else if (board[idx] != '_')
-                        brk = true;
-                }
-                else
-                    brk = true;
-            }
-            idx -= 10;
-            while (!brk && idx > -1)
-            {
-                if (idx % 9 != 8)
-                {
-                    if (white && (board[idx] == 'q' || board[idx] == 'b'))
-                        return true;
-                    else if (board[idx] == 'Q' || board[idx] == 'B')
-                        return true;
-                    else if (board[idx] != '_')
-                        brk = true;
-                }
-                else
-                    brk = true;
-                idx -= 10;
-            }
-            #endregion
-
-            #region down_right
-            idx2 = kingPos - 8;
-            brk = false;
-            if (idx2 > -1)
-            {
-                if (idx2 % 9 != 8)
-                {
-                    if (white && (board[idx2] == 'q' || board[idx2] == 'b' || board[idx2] == 'k' || board[idx2] == 'p'))
-                        return true;
-                    else if (board[idx2] == 'Q' || board[idx2] == 'B' || board[idx2] == 'K')
-                        return true;
-                    else
-                        brk = true;
-                }
-                else
-                    brk = true;
-                idx2 -= 8;
-                while (!brk && idx2 > -1)
-                {
-                    if (idx % 9 != 8)
+                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
+                    else if (board[pos] != '_')
                     {
-                        if (white && (board[idx2] == 'q' || board[idx2] == 'b'))
-                            return true;
-                        else if (board[idx2] == 'Q' || board[idx2] == 'B')
-                            return true;
-                        else
-                            brk = true;
+                      //  this.Log("We hit a piece @ " + pos.ToString());
+                        // check is already false
+                        break;
                     }
-                    else
-                        brk = true;
-                    idx2 -= 8;
+                    pos += shift;
                 }
             }
-            #endregion
-            //default
-            return false;
+            // For each up direction
+            for (int i = 0; i < retreatDiagonals.Length; i++)
+            {
+                int shift = retreatDiagonals[i];
+                int pos = kingPos + shift;
+                // Move in that direction until you hit an edge or another piece
+                while (pos > 0 && pos < 71 && pos % 9 != 8)
+                {
+                    // If you hit a rook or a queen we're in check
+                    if (board[pos] == enemyBishop || board[pos] == enemyQueen)
+                    {
+                        //this.Log(" - " + color + " king (at pos " + kingPos + ") is in check on Diagonals from pos " + pos);
+                        check = true;
+                        break;
+                    }
+                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
+                    else if (board[pos] != '_')
+                    {
+                        // check is already false
+                        break;
+                    }
+                    pos += shift;
+                }
+            }
+            return check;
         }
 
         private static int GetKingPos(this char[] board, bool white)
