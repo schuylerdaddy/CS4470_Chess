@@ -438,7 +438,7 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
             return 0;
         }
 
-        private static bool KnightCheck(this char[] board, bool white, int pos)
+       private static bool KnightCheck(this char[] board, bool white, int pos)
         {
             bool check = false;
             char enemyKnight;
@@ -451,30 +451,39 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 enemyKnight = 'N';
             }
             // Array of all possible attacking knight positions
-            int[] knights = new int[8] { pos - 11, pos - 19, pos - 17, pos - 7, pos + 11, pos + 19, pos + 17, pos + 7 };
+            int[] knights = new int[8] { pos - 11, pos - 19, pos + 7, pos + 17, pos + 11, pos + 19, pos -7, pos -17 };
             for (int i = 0; i < knights.Length; i++)
             {
                 int idx = knights[i];
-                // If the position is within the board range
-                if (idx > 0 && idx < 71 && idx % 9 != 8)
+                int toX = idx % 9;
+                // left moves
+                if (i < 4)
                 {
-                    if (board[idx] == enemyKnight)
+                    if (toX < pos % 9 && idx > 0 && idx < 71)
                     {
-                        //this.Log("In Check by Knight at pos: " + idx);
-                        check = true;
-                        break;
+                        if (board[idx] == enemyKnight)
+                        {
+                            //this.Log("In Check by Knight at pos: " + idx);
+                            check = true;
+                            break;
+                        }
+                    }
+                }
+                else //right moves
+                {
+                    if (toX > pos % 9 && toX != 8 && idx > 0 && idx < 71)
+                    {
+                        if (board[idx] == enemyKnight)
+                        {
+                            //this.Log("In Check by Knight at pos: " + idx);
+                            check = true;
+                            break;
+                        }
                     }
                 }
             }
-            /*
-            if (check)
-            {
-            this.Log("- We are in check by KNIGHTS!");
-            }
-            */
             return check;
         }
-
         private static bool ColRowCheck(this char[] board, bool white, int kingPos)
         {
             bool check = false;
