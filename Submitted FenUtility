@@ -76,6 +76,7 @@ namespace ShallowRed
 
         static public bool IsValidMove(this char[] board, bool white, int to)
         {
+            if (to < 0 || to >= 71) return false;
             if (board[to] == '_')
                 return true;
             return !white ? Char.IsUpper(board[to]) : Char.IsLower(board[to]);
@@ -100,7 +101,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(board, white))
                         moves.Add(temp);
                     if (TakesOpponentPiece(board, white, idx))
                         break;
@@ -116,7 +117,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (TakesOpponentPiece(board, white, idx))
                         break;
@@ -133,7 +134,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, bse + idx))
                 {
                     temp = board.Move(i, bse + idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (TakesOpponentPiece(board, white, bse + idx))
                         break;
@@ -150,7 +151,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, bse + idx))
                 {
                     temp = board.Move(i, bse + idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (TakesOpponentPiece(board, white, bse + idx))
                         break;
@@ -170,7 +171,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (board.TakesOpponentPiece(white, idx))
                         break;
@@ -185,7 +186,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (board.TakesOpponentPiece(white, idx))
                         break;
@@ -201,7 +202,7 @@ namespace ShallowRed
                 if (board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (board.TakesOpponentPiece(white, idx))
                         break;
@@ -216,7 +217,7 @@ namespace ShallowRed
                 if (board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (board.TakesOpponentPiece(white, idx))
                         break;
@@ -235,56 +236,56 @@ namespace ShallowRed
             if (idx < 71 && originRow < 7 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i + 17;
             if (idx < 71 && originRow > 0 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i + 11;
             if (idx < 71 && originRow < 6 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i + 7;
             if (idx < 71 && originRow % 9 > 1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i - 19;
             if (idx > -1 && originRow > 0 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i - 17;
             if (idx > -1 && originRow < 7 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i - 11;
             if (idx > -1 && originRow > 1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i - 7;
             if (idx > -1 && originRow < 6 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
         }
@@ -299,19 +300,19 @@ namespace ShallowRed
                 if (idx % 9 != 8 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (board.IsValidMove(white, ++idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (++idx % 9 != 8 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
             }
@@ -320,14 +321,14 @@ namespace ShallowRed
             if (idx % 9 != 0 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
             idx = i - 1;
             if (idx % 9 != 8 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (!temp.InCheck(white))
+                if (!InCheck(temp, white))
                     moves.Add(temp);
             }
 
@@ -337,25 +338,25 @@ namespace ShallowRed
                 if (idx % 9 != 0 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (board.IsValidMove(white, --idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (idx % 9 != 0 && board.IsValidMove(white, --idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
             }
 
         }
-static public void AddPawnMoves(this char[] board, bool white, int i, ref List<char[]> moves)
+        static public void AddPawnMoves(this char[] board, bool white, int i, ref List<char[]> moves)
         {
             char[] temp;
             if (!white)
@@ -365,26 +366,26 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                     if (board[i + 18] == '_' && board[i + 9] == '_')
                     {
                         temp = board.MovePawn(i, i + 18, white);
-                        if (!temp.InCheck(white))
+                        if (!InCheck(temp, white))
                             moves.Add(temp);
                     }
                 }
                 if (board[i + 9] == '_')
                 {
                     temp = board.MovePawn(i, i + 9, white);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (Char.IsUpper(board[i + 8]))
                 {
                     temp = board.MovePawn(i, i + 8, white);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (i < 61 && Char.IsUpper(board[i + 10]))
                 {
                     temp = board.MovePawn(i, i + 10, white);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
             }
@@ -395,50 +396,48 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                     if (board[i - 18] == '_' && board[i - 9] == '_')
                     {
                         temp = board.MovePawn(i, i - 18, white);
-                        if (!temp.InCheck(white))
+                        if (!InCheck(temp, white))
                             moves.Add(temp);
                     }
                 }
                 if (board[i - 9] == '_')
                 {
                     temp = board.MovePawn(i, i - 9, white);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (Char.IsLower(board[i - 8]))
                 {
                     temp = board.MovePawn(i, i - 8, white);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
                 if (i > 10 && Char.IsLower(board[i - 10]))
                 {
                     temp = board.MovePawn(i, i - 10, white);
-                    if (!temp.InCheck(white))
+                    if (!InCheck(board, white))
                         moves.Add(temp);
                 }
             }
         }
 
-        public static bool InCheck(this char[] board, bool white)
+        public static bool InCheck(char[] board, bool white)
         {
-            int kingPos = board.GetKingPos(white);
-            return board.DiagonalCheck(white, kingPos) || board.KnightCheck(white, kingPos) || board.ColRowCheck(white, kingPos);
-        }
-        private static int GetKingPos(this char[] board, bool white)
-        {
-            char kingChar = white ? 'K' : 'k';
-            for (int i = 0; i < 71; ++i)
-            {
-                if (board[i] == kingChar)
-                {
-                    return i;
-                }
+            int kingPos = GetKingPos(board, white);
+            bool check = DiagonalCheck(board, white, kingPos) || KnightCheck(board, white, kingPos) || ColRowCheck(board, white, kingPos);
+            /*
+            if (check){
+                this.Log("- Yep, we're definitely in check!");
             }
-            return 0;
+            else {
+                this.Log("- Nope, no check here.");
+            }
+            */
+            return check;
         }
 
-       private static bool KnightCheck(this char[] board, bool white, int pos)
+
+        private static bool KnightCheck(char[] board, bool white, int pos)
         {
             bool check = false;
             char enemyKnight;
@@ -451,7 +450,7 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 enemyKnight = 'N';
             }
             // Array of all possible attacking knight positions
-            int[] knights = new int[8] { pos - 11, pos - 19, pos + 7, pos + 17, pos + 11, pos + 19, pos -7, pos -17 };
+            int[] knights = new int[8] { pos - 11, pos - 19, pos + 7, pos + 17, pos + 11, pos + 19, pos - 7, pos - 17 };
             for (int i = 0; i < knights.Length; i++)
             {
                 int idx = knights[i];
@@ -483,8 +482,12 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 }
             }
             return check;
+
+
+
         }
-        private static bool ColRowCheck(this char[] board, bool white, int kingPos)
+
+        private static bool ColRowCheck(char[] board, bool white, int kingPos)
         {
             bool check = false;
             char enemyRook;
@@ -504,11 +507,12 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 enemyKing = 'K';
             }
             int[] directions = new int[4] {
-                                          -9, // up
-                                           9, // down
-                                             -1, // left
-                                            1 // right
-                                            };
+                -9, // up
+                9, // down
+               -1, // left
+                1 // right
+            };
+
             // For each direction
             for (int i = 0; i < directions.Length; i++)
             {
@@ -516,11 +520,15 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 int pos = kingPos + shift;
 
                 //Check first space for king as well as rook and queen
-                if ((pos > -1 && pos < 71 && pos % 9 != 8))
-                    if (board[pos] == enemyRook || board[pos] == enemyQueen || board[pos] == enemyKing)
-                        return true;
 
-                pos = kingPos + shift;
+                if ((pos > -1 && pos < 71 && pos % 9 != 8))
+                {
+                    if (board[pos] == enemyKing)
+                    {
+                        check = true;
+                        break;
+                    }
+                }
 
                 // Move in that direction until you hit an edge or another piece
                 while (pos > -1 && pos < 71 && pos % 9 != 8)
@@ -528,6 +536,7 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                     // If you hit a rook or a queen we're in check
                     if (board[pos] == enemyRook || board[pos] == enemyQueen)
                     {
+                        //this.Log(" - " + color + " is in check on ColRow from " + pos.ToString());
                         check = true;
                         break;
                     }
@@ -549,7 +558,7 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
             return check;
         }
 
-        private static bool DiagonalCheck(this char[] board, bool white, int kingPos)
+        private static bool DiagonalCheck(char[] board, bool white, int kingPos)
         {
             bool check = false;
             char enemyBishop;
@@ -599,11 +608,12 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
 
 
 
-            // For each up direction
-           for (int i = 0; i < advanceDiagonals.Length; i++)
+            // For each advance direction
+            for (int i = 0; i < advanceDiagonals.Length; i++)
             {
                 int shift = advanceDiagonals[i];
                 int pos = kingPos + shift;
+
                 // Check Pawns:
                 if (pos > 0 && pos < 71 && pos % 9 != 8)
                 {
@@ -613,26 +623,28 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                         break;
                     }
                 }
-                
+
                 // Move in that direction until you hit an edge or another piece
                 while (pos > -1 && pos < 71 && pos % 9 != 8)
                 {
-                    // If you hit a rook or a queen we're in check
+                    // If you hit a bishop or a queen we're in check
                     if (board[pos] == enemyBishop || board[pos] == enemyQueen)
                     {
+                        //this.Log(" - " + color + " king (at pos " + kingPos + ") is in check on Diagonals from pos " + pos);
                         check = true;
                         break;
                     }
                     // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
                     else if (board[pos] != '_')
                     {
+                        // check is already false
                         break;
                     }
                     pos += shift;
                 }
             }
 
-            // For each up direction
+            // For each retreat direction
             for (int i = 0; i < retreatDiagonals.Length; i++)
             {
                 int shift = retreatDiagonals[i];
@@ -641,7 +653,7 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 // Move in that direction until you hit an edge or another piece
                 while (pos > -1 && pos < 71 && pos % 9 != 8)
                 {
-                    // If you hit a rook or a queen we're in check
+                    // If you hit a bishop or a queen we're in check
                     if (board[pos] == enemyBishop || board[pos] == enemyQueen)
                     {
                         //this.Log(" - " + color + " king (at pos " + kingPos + ")  is in check on Diagonals from pos " + pos);
@@ -660,7 +672,21 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
 
             return check;
         }
+
+        private static int GetKingPos(char[] board, bool white)
+        {
+            char kingChar = white ? 'K' : 'k';
+            for (int i = 0; i < 71; ++i)
+            {
+                if (board[i] == kingChar)
+                {
+                    return i;
+                }
+            }
+            return 0;
+        }
     }
+
         public static class FEN
         {
             static public List<char[]> GetLegalMoves(char[] board, ChessColor color)
