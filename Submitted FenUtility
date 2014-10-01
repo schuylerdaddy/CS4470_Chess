@@ -356,8 +356,6 @@ namespace ShallowRed
 
         }
 
-        static public void AddPawnMoves(this char[] board, bool white, int i, ref List<char[]> moves)
-        {
             char[] temp;
             if (!white)
             {
@@ -365,27 +363,26 @@ namespace ShallowRed
                 {
                     if (board[i + 18] == '_' && board[i + 9] == '_')
                     {
-                        temp = board.MovePawn(i, i + 18, false);
+                        temp = board.MovePawn(i, i + 18, white);
                         if (!temp.InCheck(white))
                             moves.Add(temp);
                     }
                 }
-
                 if (board[i + 9] == '_')
                 {
-                    temp = board.MovePawn(i, i + 9, false);
+                    temp = board.MovePawn(i, i + 9, white);
                     if (!temp.InCheck(white))
                         moves.Add(temp);
                 }
                 if (Char.IsUpper(board[i + 8]))
                 {
-                    temp = board.MovePawn(i, i + 8, false);
+                    temp = board.MovePawn(i, i + 8, white);
                     if (!temp.InCheck(white))
                         moves.Add(temp);
                 }
                 if (i < 61 && Char.IsUpper(board[i + 10]))
                 {
-                    temp = board.MovePawn(i, i + 10, false);
+                    temp = board.MovePawn(i, i + 10, white);
                     if (!temp.InCheck(white))
                         moves.Add(temp);
                 }
@@ -396,31 +393,30 @@ namespace ShallowRed
                 {
                     if (board[i - 18] == '_' && board[i - 9] == '_')
                     {
-                        temp = board.MovePawn(i, i - 18, false);
+                        temp = board.MovePawn(i, i - 18, white);
                         if (!temp.InCheck(white))
                             moves.Add(temp);
                     }
                 }
                 if (board[i - 9] == '_')
                 {
-                    temp = board.MovePawn(i, i - 9, false);
+                    temp = board.MovePawn(i, i - 9, white);
                     if (!temp.InCheck(white))
                         moves.Add(temp);
                 }
                 if (Char.IsLower(board[i - 8]))
                 {
-                    temp = board.MovePawn(i, i - 8, false);
+                    temp = board.MovePawn(i, i - 8, white);
                     if (!temp.InCheck(white))
                         moves.Add(temp);
                 }
                 if (i > 10 && Char.IsLower(board[i - 10]))
                 {
-                    temp = board.MovePawn(i, i - 10, false);
+                    temp = board.MovePawn(i, i - 10, white);
                     if (!temp.InCheck(white))
                         moves.Add(temp);
                 }
             }
-        }
 
         public static bool InCheck(this char[] board, bool white)
         {
