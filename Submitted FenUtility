@@ -516,14 +516,14 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 int pos = kingPos + shift;
 
                 //Check first space for king as well as rook and queen
-                if ((pos > 0 && pos < 71 && pos % 9 != 8))
+                if ((pos > -1 && pos < 71 && pos % 9 != 8))
                     if (board[pos] == enemyRook || board[pos] == enemyQueen || board[pos] == enemyKing)
                         return true;
 
                 pos = kingPos + shift;
 
                 // Move in that direction until you hit an edge or another piece
-                while (pos > 0 && pos < 71 && pos % 9 != 8)
+                while (pos > -1 && pos < 71 && pos % 9 != 8)
                 {
                     // If you hit a rook or a queen we're in check
                     if (board[pos] == enemyRook || board[pos] == enemyQueen)
@@ -600,34 +600,32 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
 
 
             // For each up direction
-            for (int i = 0; i < advanceDiagonals.Length; i++)
+           for (int i = 0; i < advanceDiagonals.Length; i++)
             {
                 int shift = advanceDiagonals[i];
                 int pos = kingPos + shift;
-
                 // Check Pawns:
-                if (board[pos] == enemyPawn || board[pos] == enemyKing)
+                if (pos > 0 && pos < 71 && pos % 9 != 8)
                 {
-                    //   this.Log(" - " + color + " king is in check by pawn or king from pos " + pos);
-                    check = true;
-                    break;
+                    if (board[pos] == enemyPawn || board[pos] == enemyKing)
+                    {
+                        check = true;
+                        break;
+                    }
                 }
-
+                
                 // Move in that direction until you hit an edge or another piece
-                while (pos > 0 && pos < 71 && pos % 9 != 8)
+                while (pos > -1 && pos < 71 && pos % 9 != 8)
                 {
                     // If you hit a rook or a queen we're in check
                     if (board[pos] == enemyBishop || board[pos] == enemyQueen)
                     {
-                        // this.Log(" - " + color + " king (at pos " + kingPos + ") is in check on Diagonals from pos " + pos);
                         check = true;
                         break;
                     }
                     // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
                     else if (board[pos] != '_')
                     {
-                        // this.Log("We hit a piece @ " + pos.ToString());
-                        // check is already false
                         break;
                     }
                     pos += shift;
@@ -641,7 +639,7 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                 int pos = kingPos + shift;
 
                 // Move in that direction until you hit an edge or another piece
-                while (pos > 0 && pos < 71 && pos % 9 != 8)
+                while (pos > -1 && pos < 71 && pos % 9 != 8)
                 {
                     // If you hit a rook or a queen we're in check
                     if (board[pos] == enemyBishop || board[pos] == enemyQueen)
