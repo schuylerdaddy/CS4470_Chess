@@ -9,8 +9,6 @@ using System.Diagnostics;
 
 namespace StudentAI
 {
-   
-    
     public class NodeMove
     {
         public char[] board;
@@ -92,7 +90,7 @@ namespace StudentAI
             bool white = true;
             if (myColor == ChessColor.White)
                 white = false;
-            if (InCheck(boardAfterMove, white))
+            if (FENExtensions.InCheck(boardAfterMove, white))
             {
                 move.Flag = ChessFlag.Check;
                 List<char[]> possibleOpponentMove = FEN.GetAvailableMoves(boardAfterMove, white ? ChessColor.White : ChessColor.Black);
@@ -149,7 +147,7 @@ namespace StudentAI
             bool white = true;
             if (colorOfPlayerMoving == ChessColor.White)
                 white = false;
-            if (InCheck(boardToCheck, white))
+            if (FENExtensions.InCheck(boardToCheck, white))
                 testFlag = ChessFlag.Check;
             if (testFlag != moveToCheck.Flag)
                 return false;
@@ -347,244 +345,6 @@ namespace StudentAI
             return choice;
         }
 
-        public bool InCheck(char[] board, bool white)
-        {
-            int kingPos = GetKingPos(board, white);
-            bool check = DiagonalCheck(board, white, kingPos) || KnightCheck(board, white, kingPos) || ColRowCheck(board, white, kingPos);
-            /*
-            if (check){
-                this.Log("- Yep, we're definitely in check!");
-            }
-            else {
-                this.Log("- Nope, no check here.");
-            }
-            */
-            return check;
-        }
-
-        private bool KnightCheck(char[] board, bool white, int pos)
-        {
-            this.Log("Checking knights");
-            bool check = false;
-            char enemyKnight;
-
-            enemyKnight = white ? 'n' : 'N';
-
-            // Array of all possible attacking knight positions
-            int[] knights = new int[8] { pos - 11, pos - 19, pos - 17, pos - 7, pos + 11, pos + 19, pos + 17, pos + 7 };
-
-            for (int i = 0; i < knights.Length; i++)
-            {
-                int idx = knights[i];
-
-                // If the position is within the board range
-                if (idx > 0 && idx < 71 && idx % 9 != 8)
-                {
-                    if (board[idx] == enemyKnight)
-                    {
-                        this.Log("In Check by Knight at pos: " + idx);
-                        check = true;
-                        break;
-                    }
-                }
-            }
-
-            /*
-            if (check)
-            {
-                this.Log("- We are in check by KNIGHTS!");
-            }
-            */
-            return check;
-        }
-
-        private bool ColRowCheck(char[] board, bool white, int kingPos)
-        {
-            bool check = false;
-            char enemyRook;
-            char enemyQueen;
-            string color;
-            if (white)
-            {
-                color = "White";
-                enemyRook = 'r';
-                enemyQueen = 'q';
-            }
-            else
-            {
-                color = "Black";
-                enemyRook = 'R';
-                enemyQueen = 'Q';
-            }
-
-            int[] directions = new int[4] {
-                -9, // up
-                9,  // down
-                -1, // left
-                1   // right
-            };
-
-            // For each direction
-            for (int i = 0; i < directions.Length; i++)
-            {
-                int shift = directions[i];
-                int pos = kingPos + shift;
-
-                // Move in that direction until you hit an edge or another piece
-                while (pos > 0 && pos < 71 && pos % 9 != 8)
-                {
-                    // If you hit a rook or a queen we're in check
-                    if (board[pos] == enemyRook || board[pos] == enemyQueen)
-                    {
-                        this.Log(" - " + color + " is in check on ColRow from " + pos.ToString());
-                        check = true;
-                        break;
-                    }
-                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
-                    else if (board[pos] != '_')
-                    {
-                        // check is already false
-                        break;
-                    }
-                    pos += shift;
-                }
-            }
-
-            
-            if (check)
-            {
-                
-            }
-            
-            return check;
-        }
-
-        private bool DiagonalCheck(char[] board, bool white, int kingPos)
-        {
-            bool check = false;
-            char enemyBishop;
-            char enemyPawn;
-            char enemyQueen;
-            char enemyKing;
-            int[] advanceDiagonals;
-            int[] retreatDiagonals;
-            string color;
-            if (white)
-            {
-                color = "White";
-                this.Log("Checking Diagonals for White");
-                enemyBishop = 'b';
-                enemyQueen = 'q';
-                enemyPawn = 'p';
-                enemyKing = 'k';
-                advanceDiagonals = new int[2] {
-                    -10, // up left
-                    -8  // up right
-                };
-
-                retreatDiagonals = new int[2] {
-                    10, // down left
-                    8  // down right
-                };
-            }
-            else
-            {
-                color = "Black";
-                this.Log("Checking Diagonals for Black");
-                enemyBishop = 'B';
-                enemyQueen = 'Q';
-                enemyPawn = 'P';
-                enemyKing = 'K';
-
-                advanceDiagonals = new int[2] {
-                    10, // down left
-                    8  // down right
-                };
-
-                retreatDiagonals = new int[2] {
-                    -10, // up left
-                    -8  // up right
-                };
-            }
-
-
-
-            // For each up direction
-            for (int i = 0; i < advanceDiagonals.Length; i++)
-            {
-                int shift = advanceDiagonals[i];
-                int pos = kingPos + shift;
-
-                // Check Pawns:
-                if (board[pos] == enemyPawn || board[pos] == enemyKing)
-                {
-                    this.Log(" - " + color + " king is in check by pawn or king from pos " + pos);
-                    check = true;
-                    break;
-                }
-
-                // Move in that direction until you hit an edge or another piece
-                while (pos > 0 && pos < 71 && pos % 9 != 8)
-                {
-                    // If you hit a rook or a queen we're in check
-                    if (board[pos] == enemyBishop || board[pos] == enemyQueen)
-                    {
-                        this.Log(" - " + color + " king (at pos " + kingPos + ") is in check on Diagonals from pos " + pos);
-                        check = true;
-                        break;
-                    }
-                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
-                    else if (board[pos] != '_')
-                    {
-                        this.Log("We hit a piece @ " + pos.ToString());
-                        // check is already false
-                        break;
-                    }
-                    pos += shift;
-                }
-            }
-
-            // For each up direction
-            for (int i = 0; i < retreatDiagonals.Length; i++)
-            {
-                int shift = retreatDiagonals[i];
-                int pos = kingPos + shift;
-
-                // Move in that direction until you hit an edge or another piece
-                while (pos > 0 && pos < 71 && pos % 9 != 8)
-                {
-                    // If you hit a rook or a queen we're in check
-                    if (board[pos] == enemyBishop || board[pos] == enemyQueen)
-                    {
-                        this.Log(" - " + color + " king (at pos " + kingPos + ")  is in check on Diagonals from pos " + pos);
-                        check = true;
-                        break;
-                    }
-                    // If you hit something that's not enemy q or r, but isn't blank, then we're safe.
-                    else if (board[pos] != '_')
-                    {
-                        // check is already false
-                        break;
-                    }
-                    pos += shift;
-                }
-            }
-
-            return check;
-        }
-
-        private int GetKingPos(char[] board, bool white)
-        {
-            char kingChar = white ? 'K' : 'k';
-            for (int i = 0; i < 71; ++i)
-            {
-                if (board[i] == kingChar)
-                {
-                    return i;
-                }
-            }
-            return 0;
-        }
 
         //Here are the initial methods for the heuristic, call the GetHeuristicValue method for whatever the current heuristic that
         //  myself and Richard are currently working on.
