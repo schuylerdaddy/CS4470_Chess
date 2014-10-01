@@ -1,0 +1,165 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UvsChess;
+
+namespace StudentAI
+{
+    public static class Heuristic
+    {
+        /// <summary>
+        /// Purpose: To calculate a heuristic value for the given board state
+        /// </summary>
+        /// <param name="boardState"></param>
+        /// <param name="color"></param>
+        /// <returns>integer representing the heuristic</returns>
+        public static int GetHeuristicValue(char[] boardState, ChessColor color)
+        {
+            return GetPieceValueHeuristic(boardState, color);
+        }
+
+        /// <summary>
+        /// Purpose: To calculate a heuristic based purely off piece value
+        /// </summary>
+        /// <param name="boardState"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private static int GetPieceValueHeuristic(char[] boardState, ChessColor color)
+        {
+            int whiteValue = 0;
+            int blackValue = 0;
+            for (int i = 0; i < boardState.Length; i++)
+            {
+                if (boardState[i] != '_' && boardState[i] != '/')
+                {
+                    if (char.IsUpper(boardState[i]))
+                        whiteValue += (pieceValues[char.ToLower(boardState[i])]);// + GetPiecePositionValue(boardState[i], i));
+                    else
+                        blackValue += (pieceValues[boardState[i]]); // + GetPiecePositionValue(boardState[i], i));
+                }
+            }
+
+            if (color == ChessColor.White)
+                return whiteValue - blackValue;
+            else
+                return blackValue - whiteValue;
+        }
+
+        private static int GetPiecePositionValue(char piece, int index)
+        {
+            switch (char.ToLower(piece))
+            {
+                case 'p':
+                    return pawnLocationValues[index];
+                case 'n':
+                    return knightLocationValues[index];
+                case 'b':
+                    return bishopLocationValues[index];
+                case 'r':
+                    return rookLocationValues[index];
+                case 'q':
+                    return queenLocationValues[index];
+                default:
+                    return kingMidGameLocationValues[index];
+            }
+        }
+
+        private static Dictionary<char, int> pieceValues = new Dictionary<char, int>
+        {
+               {'p', 100},
+               {'n', 320},
+               {'b', 330},
+               {'r', 500},
+               {'q', 900},
+               {'k', 20000}
+        };
+
+        /// <summary>
+        /// The following location values are for white, if it is black, simply reverse the values
+        /// </summary>
+        private static int[] pawnLocationValues = 
+        { 
+            0,  0,  0,  0,  0,  0,  0,  0,
+            50, 50, 50, 50, 50, 50, 50, 50,
+            10, 10, 20, 30, 30, 20, 10, 10,
+             5,  5, 10, 25, 25, 10,  5,  5,
+             0,  0,  0, 20, 20,  0,  0,  0,
+             5, -5,-10,  0,  0,-10, -5,  5,
+             5, 10, 10,-20,-20, 10, 10,  5,
+             0,  0,  0,  0,  0,  0,  0,  0 
+        };
+
+        private static int[] knightLocationValues = 
+        {
+            -50,-40,-30,-30,-30,-30,-40,-50,
+            -40,-20,  0,  0,  0,  0,-20,-40,
+            -30,  0, 10, 15, 15, 10,  0,-30,
+            -30,  5, 15, 20, 20, 15,  5,-30,
+            -30,  0, 15, 20, 20, 15,  0,-30,
+            -30,  5, 10, 15, 15, 10,  5,-30,
+            -40,-20,  0,  5,  5,  0,-20,-40,
+            -50,-40,-30,-30,-30,-30,-40,-50
+        };
+
+        private static int[] bishopLocationValues = 
+        {
+            -20,-10,-10,-10,-10,-10,-10,-20,
+            -10,  0,  0,  0,  0,  0,  0,-10,
+            -10,  0,  5, 10, 10,  5,  0,-10,
+            -10,  5,  5, 10, 10,  5,  5,-10,
+            -10,  0, 10, 10, 10, 10,  0,-10,
+            -10, 10, 10, 10, 10, 10, 10,-10,
+            -10,  5,  0,  0,  0,  0,  5,-10,
+            -20,-10,-10,-10,-10,-10,-10,-20
+        };
+
+        private static int[] rookLocationValues = 
+        {
+            0,  0,  0,  0,  0,  0,  0,  0,
+            5, 10, 10, 10, 10, 10, 10,  5,
+            -5,  0,  0,  0,  0,  0,  0, -5,
+            -5,  0,  0,  0,  0,  0,  0, -5,
+            -5,  0,  0,  0,  0,  0,  0, -5,
+            -5,  0,  0,  0,  0,  0,  0, -5,
+            -5,  0,  0,  0,  0,  0,  0, -5,
+            0,  0,  0,  5,  5,  0,  0,  0
+        };
+
+        private static int[] queenLocationValues = 
+        {
+            -20,-10,-10, -5, -5,-10,-10,-20,
+            -10,  0,  0,  0,  0,  0,  0,-10,
+            -10,  0,  5,  5,  5,  5,  0,-10,
+             -5,  0,  5,  5,  5,  5,  0, -5,
+              0,  0,  5,  5,  5,  5,  0, -5,
+            -10,  5,  5,  5,  5,  5,  0,-10,
+            -10,  0,  5,  0,  0,  0,  0,-10,
+            -20,-10,-10, -5, -5,-10,-10,-20
+        };
+
+        private static int[] kingMidGameLocationValues = 
+        {
+            -30,-40,-40,-50,-50,-40,-40,-30,
+            -30,-40,-40,-50,-50,-40,-40,-30,
+            -30,-40,-40,-50,-50,-40,-40,-30,
+            -30,-40,-40,-50,-50,-40,-40,-30,
+            -20,-30,-30,-40,-40,-30,-30,-20,
+            -10,-20,-20,-20,-20,-20,-20,-10,
+             20, 20,  0,  0,  0,  0, 20, 20,
+             20, 30, 10,  0,  0, 10, 30, 20
+        };
+
+        private static int[] kingLateGameLocationValues = 
+        {
+            -50,-40,-30,-20,-20,-30,-40,-50,
+            -30,-20,-10,  0,  0,-10,-20,-30,
+            -30,-10, 20, 30, 30, 20,-10,-30,
+            -30,-10, 30, 40, 40, 30,-10,-30,
+            -30,-10, 30, 40, 40, 30,-10,-30,
+            -30,-10, 20, 30, 30, 20,-10,-30,
+            -30,-30,  0,  0,  0,  0,-30,-30,
+            -50,-30,-30,-30,-30,-30,-30,-50
+        };
+    }
+}
