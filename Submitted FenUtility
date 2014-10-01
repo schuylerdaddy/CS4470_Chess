@@ -945,7 +945,7 @@ static public void AddPawnMoves(this char[] board, bool white, int i, ref List<c
                         moves.Add(board.MovePawn(i, i - 9, true));
                     if (Char.IsLower(board[i - 8]))
                         moves.Add(board.MovePawn(i, i - 8, true));
-                    if (1 > 10 && Char.IsLower(board[i - 10]))
+                    if (i > 10 && Char.IsLower(board[i - 10]))
                         moves.Add(board.MovePawn(i, i - 10, true));
                 }
             }
