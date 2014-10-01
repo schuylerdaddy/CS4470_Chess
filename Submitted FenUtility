@@ -355,7 +355,8 @@ namespace ShallowRed
             }
 
         }
-
+static public void AddPawnMoves(this char[] board, bool white, int i, ref List<char[]> moves)
+        {
             char[] temp;
             if (!white)
             {
@@ -417,6 +418,7 @@ namespace ShallowRed
                         moves.Add(temp);
                 }
             }
+        }
 
         public static bool InCheck(this char[] board, bool white)
         {
