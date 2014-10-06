@@ -202,6 +202,13 @@ get { return "Shallow Red 2 (Debug)"; }
                     {
                         parentNode.h = maximumValue;
                         // this.Log("pruned: depth" + depth + " h= " + parentNode.h+ "beta" + beta);
+                        int k = 0;
+                        while (parentNode.children[k] != null)
+                        {
+                            parentNode.children[k] = null;
+                            k++;
+                        }
+                        GC.Collect();
                         return;
                     }
                     alpha = Math.Max(alpha, maximumValue);
@@ -209,7 +216,14 @@ get { return "Shallow Red 2 (Debug)"; }
                 ++i;
             }
             parentNode.h = maximumValue;
-            this.Log("depth" + depth + " h= " + parentNode.h);
+            //this.Log("depth" + depth + " h= " + parentNode.h);
+            int k = 0;
+            while (parentNode.children[k] != null)
+            {
+                parentNode.children[k] = null;
+                k++;
+            }
+            GC.Collect();
         }
         public void minValue(ref NodeMove parentNode, int depth, bool white, int alpha, int beta, int cutoff)
         {
@@ -263,6 +277,13 @@ get { return "Shallow Red 2 (Debug)"; }
                     if (minimumValue <= alpha)
                     {
                         parentNode.h = minimumValue;
+                        int k = 0;
+                        while (parentNode.children[k] != null)
+                        {
+                            parentNode.children[k] = null;
+                            k++;
+                        }
+                        GC.Collect();
                         // this.Log("pruned: depth" + depth + " h= " + parentNode.h + "alpha:" + alpha);
                         return;
                     }
@@ -271,7 +292,14 @@ get { return "Shallow Red 2 (Debug)"; }
                 ++i;
             }
             parentNode.h = minimumValue;
-            this.Log("depth" + depth + " h= " + parentNode.h);
+            int k = 0;
+            while (parentNode.children[k] != null)
+            {
+                parentNode.children[k] = null;
+                k++;
+            }
+            GC.Collect();
+          //  this.Log("depth" + depth + " h= " + parentNode.h);
         }
         public void generateChildren(ref NodeMove parentNode, ChessColor color)
         {
