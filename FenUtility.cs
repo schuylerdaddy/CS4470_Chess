@@ -49,6 +49,7 @@ namespace ShallowRed
             char[] b = (char[])board.Clone();
             b[to] = b[from];
             b[from] = '_';
+            
             return b;
         }
         public static char[] MovePawn(this char[] board, int from, int to, bool white)
@@ -93,7 +94,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (TakesOpponentPiece(board, white, idx))
                         break;
