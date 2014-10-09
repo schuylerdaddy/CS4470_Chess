@@ -55,8 +55,8 @@ namespace ShallowRed
     public class LightList
     {
         public int Count = 0;
-        private char[][] list = new char[10000][];
 
+        private char[][] list = new char[150][];
         public void Add(char[] board)
         {
             list[Count++] = board;
@@ -66,6 +66,13 @@ namespace ShallowRed
         {
             get { return list[i]; }
             private set { }
+        }
+
+        public void Empty()
+        {
+
+            Count = 0;
+
         }
     }
 }
