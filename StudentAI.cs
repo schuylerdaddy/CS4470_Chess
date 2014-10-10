@@ -6,6 +6,7 @@ using UvsChess;
 using ShallowRed;
 using System.IO;
 using System.Diagnostics;
+
 namespace StudentAI
 {
     public class StudentAI : IChessAI
@@ -36,7 +37,7 @@ get { return "Shallow Red 2 (Debug)"; }
             //convert Fen for to shallow red fen form
             String originalFenBoard = board.ToPartialFenBoard();
             char[] SRfen = FENExtensions.ToShallowRedFEN(originalFenBoard);
-            char[] boardAfterMove = miniMax(SRfen, myColor);
+            char[] boardAfterMove = Minimax.miniMax(SRfen, myColor);
             ChessMove move = FENExtensions.GenerateMove(SRfen, boardAfterMove);
             bool white = true;
             if (myColor == ChessColor.White)
@@ -81,8 +82,7 @@ get { return "Shallow Red 2 (Debug)"; }
             
             bool legal = false;
             //check that move results in a legal board
-            for(int idx =0; idx < legalBoards.Count;++idx)
-            {
+            for(int idx =0; idx < legalBoards.Count;++idx) {
                 char[] board = legalBoards[idx];
                 bool equal = true;
                 for (int i = 0; i < 71; i++)
@@ -110,6 +110,7 @@ get { return "Shallow Red 2 (Debug)"; }
             if (testFlag != moveToCheck.Flag)
                 return false;
 
+            //validate stalemate flag
             //check stalemate flag
             //check if checkmate
             //getAvailable moves, if none then checkMate
@@ -137,189 +138,6 @@ get { return "Shallow Red 2 (Debug)"; }
                 }
             }
             return newForm;
-        }
-        public char[] miniMax(char[] SRFen, ChessColor color)
-        {
-            //Char[] chosenBoard;
-            bool white;
-            int alpha = -10000;
-            int beta = 10000;
-            int cutoff = 4;
-            if (color == ChessColor.White) white = true;
-            else white = false;
-            // List<Char[]> legalBoards= FEN.GetAvailableMoves (SRFen, white); //AvailableMoves defined by Greg
-            //need to build tree
-            NodeMove init = new NodeMove(SRFen);
-          //  GameTree Tree = new GameTree(init);
-            int depth = 0;
-            minValue(ref SRFen, depth + 1, white, alpha, beta, cutoff);
-            //call min
-            //chosenBoard = init.board;
-            //this.Log("CHOSEN MOVE" + init.h);
-            return SRFen;
-        }
-        public int maxValue(ref char[] board, int depth, bool white, int alpha, int beta, int cutoff)
-        {
-            ChessColor color;
-           // NodeMove choice;
-            int hValue;
-            if (white)
-                color = ChessColor.White;
-            else
-                color = ChessColor.Black;
-            LightList childrenBoard = FEN.GetAvailableMoves(board, color, false);
-            //generateChildren(ref parentNode, color);
-            int count = childrenBoard.Count;
-            if (count == 0)
-            { //no moves available
-                //parentNode.h = -1000;
-                //return;
-                return -1000;
-            }
-            int maximumValue = -10000;
-            int i = 0;
-            char[] tempBoard=null;
-            while (i<count)
-            { //process all the children move
-                if (depth != cutoff)  {
-                   tempBoard = childrenBoard[i];
-                    hValue= minValue(ref tempBoard, depth + 1, !white, alpha, beta, cutoff);
-                 }
-                else
-                    hValue = Heuristic.GetHeuristicValue(childrenBoard[i], color);
-                if (depth == 1)             {
-                    if (maximumValue == hValue)    {
-                        //choose randomly between current choice and this move
-
-                        Random rnd = new Random();
-                        int value = rnd.Next(0, 1);
-                        if (value == 0)
-                            board = tempBoard;                    }
-                    else if (hValue > maximumValue)                    {
-                        maximumValue = hValue;
-                        board = childrenBoard[i];
-                        //parentNode.h = minimumValue;                   
-                    }
-                    if (maximumValue >= beta)               {
-                        hValue = maximumValue;
-                        return hValue;                    }
-                    alpha = Math.Max(alpha, maximumValue);                }
-                else                {
-                    maximumValue = Math.Max(maximumValue, hValue);
-                    if (maximumValue >= beta)                    {
-                        hValue = maximumValue;
-                        return hValue;                    }
-                    alpha = Math.Max(alpha, maximumValue);                }
-                ++i;            }
-            hValue = maximumValue;
-            return hValue;
-        }
-        public int minValue(ref char[] board, int depth, bool white, int alpha, int beta, int cutoff)
-        {
-            
-            ChessColor color;
-            int hValue;
-            LightList equalMoves=new LightList();
-            //NodeMove choice;
-            if (white)
-                color = ChessColor.White;
-            else
-                color = ChessColor.Black;
-            LightList childrenBoard = FEN.GetAvailableMoves(board, color, false);
-            //generateChildren(ref parentNode, color);
-            int count = childrenBoard.Count;
-            if (count == 0)
-            { //no moves available
-                //parentNode.h = -1000;
-                //return;
-                return -1000;
-            }
-            int minimumValue = 10000;
-            int i = 0;
-            char[] tempBoard = null;
-            while (i<count)
-            { //process all the children move
-                if (depth != cutoff)
-                {
-                    tempBoard = childrenBoard[i];
-                    hValue= maxValue(ref tempBoard, depth + 1, !white, alpha, beta, cutoff);
-                }
-                else
-                    //get heuristics value
-                    hValue = Heuristic.GetHeuristicValue(childrenBoard[i], color);
-                if (depth == 1)
-                {
-                    if (minimumValue == hValue)
-                    {
-                        //choose randomly between current choice and this move
-                        equalMoves.Add(tempBoard);
-
-                    }
-                    else if (hValue < minimumValue)
-                    {
-                        minimumValue = hValue;
-                        board = childrenBoard[i];
-                        equalMoves.Empty();
-                        equalMoves.Add(board);
-                        //parentNode.h = minimumValue;
-                    }
-                    if (minimumValue <= alpha)
-                    {
-                        //hValue = minimumValue;
-                        // this.Log("pruned: depth" + depth + " h= " + parentNode.h + "alpha" + alpha);
-                        if (equalMoves.Count == 1)
-                            board = equalMoves[0];
-                        else
-                        {
-                            Random rnd = new Random();
-                            int value = rnd.Next(0, equalMoves.Count-1);
-                            board = equalMoves[value];
-                        }
-                        return hValue;
-                    }
-                    beta = Math.Min(beta, minimumValue);
-                }
-                else
-                {
-                    minimumValue = Math.Min(minimumValue, hValue);
-                    if (minimumValue <= alpha)
-                    {
-                        hValue = minimumValue;
-                      /*  int k = 0;
-                        while (parentNode.children[k] != null)
-                        {
-                            parentNode.children[k] = null;
-                            k++;
-                        }*/
-  //                      GC.Collect();
-                        // this.Log("pruned: depth" + depth + " h= " + parentNode.h + "alpha:" + alpha);
-                        return hValue;
-                    }
-                    beta = Math.Min(beta, minimumValue);
-                }
-                ++i;
-            }
-            hValue = minimumValue;
-         /*   int j = 0;
-            while (parentNode.children[j] != null)
-            {
-                parentNode.children[j] = null;
-                j++;
-            }*/
-           // GC.Collect();
-          //  this.Log("depth" + depth + " h= " + parentNode.h);
-            if (depth == 1)
-            {
-                if (equalMoves.Count == 1)
-                    board = equalMoves[0];
-                else
-                {
-                    Random rnd = new Random();
-                    int value = rnd.Next(0, equalMoves.Count - 1);
-                    board = equalMoves[value];
-                }
-            }
-            return hValue;
         }
  
         #endregion
@@ -353,6 +171,7 @@ get { return "Shallow Red 2 (Debug)"; }
                 Heuristic.Log = value;
                 FEN.Log = value;
                 FENExtensions.Log = value;
+                Minimax.Log = value;
             }
         }
         /// <summary>
