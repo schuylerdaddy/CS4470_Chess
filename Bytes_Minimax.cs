@@ -4,22 +4,26 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using UvsChess;
+
 namespace ShallowRed
 {
     public static class Minimax
     {
+        
         public static AILoggerCallback Log { get; set; }
+
         /// <summary>
         /// Purpose: To perform the minimax algorithm to determine chess move
         /// </summary>
         /// <param name="boardState"></param>
         /// <param name="color"></param>
-        /// <returns>char[] board to represent the move</returns>
-        ///
+        /// <returns>byte[] board to represent the move</returns>
+        /// 
+
         public static byte[] miniMax(byte[] SRFen, ChessColor color)
         {
             TimeSpan maxTime = TimeSpan.FromMilliseconds(5500);
-            byte[] initialBoard = SRFen;
+            byte[] initialBoard = (byte[])SRFen.Clone();
             bool white;
             int alpha = -10000;
             int beta = 10000;
@@ -31,54 +35,59 @@ namespace ShallowRed
             timer.Start();
             int h;
             h = minValue(ref SRFen, depth + 1, white, alpha, beta, cutoff, ref timer);
-            byte[] bestSoFar = SRFen;
+            if (h == -5000) 
+                return SRFen;
+            byte[] bestSoFar = (byte[])SRFen.Clone();
             while (timer.Elapsed < maxTime && h != -9999)
-            {
+            { 
                 cutoff += 2;
-                byte[] temp = initialBoard;
+                byte[] temp = (byte[])initialBoard.Clone();
                 h = minValue(ref temp, depth + 1, white, alpha, beta, cutoff, bestSoFar, ref timer);
-                if (h != -9999) bestSoFar = temp;
+                if (h != -9999) bestSoFar = (byte[])temp.Clone();
+                if (h == -5000) 
+                    return bestSoFar;
             }
-            //this.Log("cutoff" + cutoff);
+            Log("cutoff" + cutoff);
             return bestSoFar;
         }
+
         public static int maxValue(ref byte[] board, int depth, bool white, int alpha, int beta, int cutoff, ref Stopwatch timer)
         {
             TimeSpan maxTime = TimeSpan.FromMilliseconds(5500);
             ChessColor color = (white ? ChessColor.White : ChessColor.Black);
             int hValue;
+            if (depth == cutoff)
+                return Heuristic.GetHeuristicValue(board, color);
             LightList childrenBoard = FEN.GetAvailableMoves(board, color, false);
+
             int count = childrenBoard.Count;
-            if (count == 0)
-            { //no moves available
-                return -1000;
+            if (count == 0){ //no moves available
+               if (FEN.InCheck(board, white))
+                    return -5000;//checkmate
+                else
+                    return -3000;//stalemate;
             }
             //sort array of moves
             int[] Hchildren = new int[count];
             for (int idx = 0; idx < count; ++idx)
                 Hchildren[idx] = Heuristic.GetHeuristicValue(childrenBoard[idx], color);
-            if (depth != cutoff)
-                sort(ref childrenBoard, ref Hchildren);
+            sort(ref childrenBoard, ref Hchildren);
+
             int maximumValue = -10000;
             int i = 0;
             byte[] tempBoard = null;
-            while (i < count && timer.Elapsed < maxTime)
-            { //process all the children move
-                if (depth != cutoff)
-                {
-                    tempBoard = childrenBoard[i];
-                    if (timer.Elapsed < maxTime)
-                        hValue = minValue(ref tempBoard, depth + 1, !white, alpha, beta, cutoff, ref timer);
-                    else
-                        return -9999;
-                }
+            while (i < count && timer.Elapsed < maxTime){ //process all the children move
+                tempBoard = childrenBoard[i];
+                if (timer.Elapsed < maxTime)
+                    hValue = minValue(ref tempBoard, depth + 1, !white, alpha, beta, cutoff, ref timer);
                 else
-                    hValue = Hchildren[i];
+                    return -9999;
+                
                 if (depth == 1)
                 {
-                    if (maximumValue == hValue)
-                    {
+                    if (maximumValue == hValue){
                         //choose randomly between current choice and this move
+
                         Random rnd = new Random();
                         int value = rnd.Next(0, 1);
                         if (value == 0)
@@ -88,6 +97,7 @@ namespace ShallowRed
                     {
                         maximumValue = hValue;
                         board = childrenBoard[i];
+
                     }
                     if (maximumValue >= beta)
                     {
@@ -113,6 +123,7 @@ namespace ShallowRed
             childrenBoard = null;
             if (timer.Elapsed > maxTime) return -9999;
             hValue = maximumValue;
+
             return hValue;
         }
         public static int minValue(ref byte[] board, int depth, bool white, int alpha, int beta, int cutoff, ref Stopwatch timer)
@@ -120,12 +131,19 @@ namespace ShallowRed
             TimeSpan maxTime = TimeSpan.FromMilliseconds(5500);
             int hValue;
             LightList equalMoves = new LightList();
+
             ChessColor color = (white ? ChessColor.White : ChessColor.Black);
+            if (depth == cutoff)
+                return Heuristic.GetHeuristicValue(board, color);
             LightList childrenBoard = FEN.GetAvailableMoves(board, color, false);
+
             int count = childrenBoard.Count;
             if (count == 0)
             { //no moves available
-                return -1000;
+                if (FEN.InCheck(board, white))
+                    return -5000;//checkmate
+                else
+                    return -3000;//stalemate
             }
             //sort array of moves
             int[] Hchildren = new int[count];
@@ -133,59 +151,55 @@ namespace ShallowRed
             {
                 Hchildren[idx] = Heuristic.GetHeuristicValue(childrenBoard[idx], color);
             }
-            if (depth != cutoff)
-                sort(ref childrenBoard, ref Hchildren);
+            sort(ref childrenBoard, ref Hchildren);
             int minimumValue = 10000;
             int i = 0;
             byte[] tempBoard = null;
             while (i < count)
             { //process all the children move
-                if (depth != cutoff)
-                {
                     tempBoard = childrenBoard[i];
                     if (timer.Elapsed < maxTime)
                         hValue = maxValue(ref tempBoard, depth + 1, !white, alpha, beta, cutoff, ref timer);
                     else
                         return -9999;
-                }
-                else
-                    //get heuristics value
-                    hValue = Hchildren[i];
-                if (depth == 1)
-                {
-                    if (minimumValue == hValue)
-                    {//store move into list of moves of same value
+                if (depth == 1) {
+                    if (hValue == -5000)
+                    {
+                        board = childrenBoard[i];
+                        childrenBoard = null;
+                        return hValue;
+                    }
+                    if (minimumValue == hValue){//store move into list of moves of same value
                         equalMoves.Add(tempBoard);
                     }
-                    else if (hValue < minimumValue)
-                    {//new minimum value, reset the move list
+                    else if (hValue < minimumValue){//new minimum value, reset the move list
                         minimumValue = hValue;
                         board = childrenBoard[i];
                         equalMoves.Empty();
                         equalMoves.Add(board);
                     }
-                    if (minimumValue <= alpha)
-                    {
-                        board = getRandomMove(equalMoves);
+                    if (minimumValue <= alpha){
+                        board=getRandomMove(equalMoves);
                         childrenBoard = null;
                         return hValue;
                     }
                     beta = Math.Min(beta, minimumValue);
                 }
-                else
-                {
+                else{
                     minimumValue = Math.Min(minimumValue, hValue);
-                    if (minimumValue <= alpha)
-                    {
+                    if (minimumValue <= alpha){
                         hValue = minimumValue;
                         childrenBoard = null;
                         return hValue;
                     }
                     beta = Math.Min(beta, minimumValue);
+                    if (minimumValue == -5000)
+                        return -5000;
                 }
                 ++i;
             }
             hValue = minimumValue;
+
             if (depth == 1)
             {
                 board = getRandomMove(equalMoves);
@@ -195,22 +209,29 @@ namespace ShallowRed
             hValue = minimumValue;
             return hValue;
         }
+
         //This min value version is only called at depth 1 when a previously found best move is used to inform the ordering of moves
+
         public static int minValue(ref byte[] board, int depth, bool white, int alpha, int beta, int cutoff, byte[] best, ref Stopwatch timer)
         {
             ChessColor color = (white ? ChessColor.White : ChessColor.Black);
             int hValue;
             LightList equalMoves = new LightList();
+           
             LightList childrenBoard = FEN.GetAvailableMoves(board, color, false);
             int count = childrenBoard.Count;
             if (count == 0)
             { //no moves available
-                return -1000;
+                if (FEN.InCheck(board, white))
+                    return -5000;//checkmate
+                else
+                    return -3000;//stalemate
             }
             //sort array of moves
             int[] Hchildren = new int[count];
             for (int idx = 0; idx < count; ++idx)
                 Hchildren[idx] = Heuristic.GetHeuristicValue(childrenBoard[idx], color);
+
             sort(ref childrenBoard, ref Hchildren);
             bool found = false;
             int indexFound = 0;
@@ -232,8 +253,7 @@ namespace ShallowRed
                 }
             }
             //prioritize previously found best move
-            if (indexFound != 0)
-            {//swap
+            if (indexFound != 0){//swap
                 byte[] temp;
                 temp = childrenBoard[0];
                 childrenBoard.Replace(childrenBoard[indexFound], 0);
@@ -253,9 +273,15 @@ namespace ShallowRed
                     hValue = Hchildren[i];
                 if (depth == 1)
                 {
+                    if (hValue == -5000)
+                    {
+                        board = childrenBoard[i];
+                        childrenBoard = null;
+                        return hValue;
+                    }
                     if (minimumValue == hValue)
                     {
-                        equalMoves.Add(tempBoard);
+                       equalMoves.Add(tempBoard);
                     }
                     else if (hValue < minimumValue)
                     {
@@ -282,15 +308,19 @@ namespace ShallowRed
                         return hValue;
                     }
                     beta = Math.Min(beta, minimumValue);
+                    if (minimumValue == -5000)
+                        return -5000;
                 }
                 ++i;
             }
             hValue = minimumValue;
             if (depth == 1)
                 board = getRandomMove(equalMoves);
+            
             childrenBoard = null;
             return hValue;
         }
+
         private static byte[] getRandomMove(LightList equalMoves)
         {
             if (equalMoves.Count == 1)
@@ -302,6 +332,7 @@ namespace ShallowRed
                 return equalMoves[value];
             }
         }
+
         private static void sort(ref LightList children, ref int[] h)
         {
             int count = children.Count;
