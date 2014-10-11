@@ -3,50 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace StudentAI
-{
-    public class NodeMove
-    {
-        public byte[] board;
-        public int h;
-        // public NodeMove parent;
-        public NodeMove[] children;
-        public NodeMove()
-        {
-        }
-        public NodeMove(int _h)
-        {
-            h = _h;
-        }
-        // public NodeMove(char[] _board, NodeMove _parent)
-        // {
-        // board = _board;
-        // parent = _parent;
-        // children = new NodeMove[100];
-        // }
-        /* public NodeMove(char[] _board, int _h, NodeMove _parent)
-        {
-        board = _board;
-        h = _h;
-        parent = _parent;
-        children = new NodeMove[100];
-        }*/
-        public NodeMove(byte[] _board)
-        {
-            board = _board;
-            // parent = null;
-            children = new NodeMove[100];
-        }
-    }
-    public class GameTree
-    {
-        public NodeMove head;
-        public GameTree(NodeMove init)
-        {
-            head = init;
-        }
-    }
-}
+  
 
 namespace ShallowRed
 {
