@@ -86,7 +86,7 @@ get { return "Shallow Red 2 (Debug)"; }
             {
                 byte[] board = legalBoards[idx];
                 bool equal = true;
-                for (int i = 0; i < FEN.OUTOFBOUNDSHIGH ; i++)
+                for (int i = 0; i < FEN.OUTOFBOUNDSHIGH; i++)
                 {
                     if (board[i] != boardToCheck[i])
                     {
@@ -107,21 +107,22 @@ get { return "Shallow Red 2 (Debug)"; }
             //check if move result in check for us
 
             if (FEN.InCheck(boardToCheck, !white))
-                testFlag = ChessFlag.Check;
+            {
+                testFlag=ChessFlag.Check;
+                LightList possibleMove = FEN.GetAvailableMoves(boardToCheck, !white ? ChessColor.White : ChessColor.Black, false);
+                if (possibleMove.Count == 0) testFlag = ChessFlag.Checkmate;
+            }
+            else
+            {
+                testFlag = ChessFlag.NoFlag;
+                //check for stalemate
+                LightList possibleMove = FEN.GetAvailableMoves(boardToCheck, !white ? ChessColor.White : ChessColor.Black, false);
+                if (possibleMove.Count == 0) testFlag = ChessFlag.Stalemate;
+            }
             if (testFlag != moveToCheck.Flag)
                 return false;
 
-            //validate stalemate flag
-            //check stalemate flag
-            //check if checkmate
-            //getAvailable moves, if none then checkMate
-            /* ChessColor colorOfOpponent;
-            if (colorOfPlayerMoving == ChessColor.White)
-            colorOfOpponent = ChessColor.Black;
-            else
-            colorOfOpponent = ChessColor.White;*/
             return legal;
-            //throw (new NotImplementedException());
         }
         public string convertToShallowRedForm(string originalFen)
         {
