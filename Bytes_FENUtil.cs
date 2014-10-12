@@ -201,7 +201,7 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                     if (TakesOpponentPiece(board, white, idx))
                         break;
@@ -455,13 +455,13 @@ namespace ShallowRed
                     if (allowCheck || !InCheck(temp, white))
                         moves.Add(temp);
                 }
-                if (board[i + UPLEFT].IsUpper()  && i%COLUMN!=COL1)
+                if (board[i + UPLEFT].IsUpper() && (i+UPLEFT) % COLUMN != COL8)
                 {
                     temp = board.MovePawn(i, i + UPLEFT, white);
                     if (allowCheck || !InCheck(temp, white))
                         moves.Add(temp);
                 }
-                if (i < 54 && board[i + UPRIGHT].IsUpper() && i % COLUMN != COL8)
+                if (i < 54 && board[i + UPRIGHT].IsUpper() && (i+UPRIGHT) % COLUMN != COL1)
                 {
                     temp = board.MovePawn(i, i + UPRIGHT, white);
                     if (allowCheck || !InCheck(temp, white))
@@ -485,16 +485,16 @@ namespace ShallowRed
                     if (allowCheck || !InCheck(temp, white))
                         moves.Add(temp);
                 }
-                if (board[i + DOWNRIGHT].IsLower() && i % COLUMN != COL1)
+                if (board[i + DOWNRIGHT].IsLower() && (i+DOWNRIGHT) % COLUMN != COL1)
                 {
                     temp = board.MovePawn(i, i + DOWNRIGHT, white);
                     if (allowCheck || !InCheck(temp, white))
                         moves.Add(temp);
                 }
-                if (i > 8 && board[i + DOWNLEFT].IsLower() && i % COLUMN != COL8)
+                if (i > 8 && board[i + DOWNLEFT].IsLower() && (i+DOWNLEFT) % COLUMN != COL8)
                 {
                     temp = board.MovePawn(i, i + DOWNLEFT, white);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                         moves.Add(temp);
                 }
             }
@@ -650,7 +650,7 @@ namespace ShallowRed
 
             pos = kingPos + RIGHT;
             //Check first space for king as well as rook and queen
-            if (pos % COLUMN != 0)
+            if (pos % COLUMN != COL1)
             {
                 if (board[pos] == enemyKing)
                 {
@@ -658,7 +658,7 @@ namespace ShallowRed
                 }
             }
             // Move in that direction until you hit an edge or another piece
-            while (pos % COLUMN != 0)
+            while (pos % COLUMN != COL1)
             {
                 // If you hit a rook or a queen we're in check
                 if (board[pos] == enemyRook || board[pos] == enemyQueen)
@@ -680,7 +680,7 @@ namespace ShallowRed
 
             pos = kingPos + LEFT;
             //Check first space for king as well as rook and queen
-            if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COLUMN)
+            if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL8)
             {
                 if (board[pos] == enemyKing)
                 {
@@ -688,7 +688,7 @@ namespace ShallowRed
                 }
             }
             // Move in that direction until you hit an edge or another piece
-            while (pos > OUTOFBOUNDSLOW && pos % COLUMN != COLUMN)
+            while (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL8)
             {
                 // If you hit a rook or a queen we're in check
                 if (board[pos] == enemyRook || board[pos] == enemyQueen)
@@ -932,6 +932,3 @@ namespace ShallowRed
     }
         #endregion
 }
-
-
-
