@@ -20,7 +20,9 @@ namespace ShallowRed
         /// <returns>integer representing the heuristic</returns>
         public static int GetHeuristicValue(char[] boardState, ChessColor color)
         {
-            return GetPieceValueHeuristic(boardState, color);
+            int pH = GetPieceValueHeuristic(boardState, color);
+            int pS = PieceSafety(boardState, color);
+            return pH + pS;
         }
 
         /// <summary>
@@ -44,10 +46,44 @@ namespace ShallowRed
                 }
             }
 
+            //Log("WV -" + whiteValue.ToString());
+            //Log("BV -" + blackValue.ToString());
+
             if (color == ChessColor.White)
+            {
+                if (whiteValue - 20000 < 1500)
+                {
+                    lateGame = true;
+                }
                 return whiteValue - blackValue;
+            }
             else
+            {
+                if (blackValue - 20000 < 1500)
+                {
+                    lateGame = true;
+                }
                 return blackValue - whiteValue;
+            }
+        }
+
+        /// <summary>
+        /// Purpose: Lower the Heuristic value if our queen is put in danger
+        /// </summary>
+        /// <param name="boardState"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private static int PieceSafety(char[] boardState, ChessColor color)
+        {
+            int hazardPenalty = 0;
+            bool white = color == ChessColor.White;
+            hazardPenalty += FENExtensions.PieceNotSafe(boardState, FENExtensions.GetPiecePos(boardState, white, 'q'), white) ? -400 : 0;
+            hazardPenalty += FENExtensions.PieceNotSafe(boardState, FENExtensions.GetPiecePos(boardState, white, 'r'), white) ? -200 : 0;
+            hazardPenalty += FENExtensions.PieceNotSafe(boardState, FENExtensions.GetPiecePos(boardState, white, 'n'), white) ? -150 : 0;
+            hazardPenalty += FENExtensions.PieceNotSafe(boardState, FENExtensions.GetPiecePos(boardState, white, 'b'), white) ? -155 : 0;
+            hazardPenalty += FENExtensions.PieceNotSafe(boardState, FENExtensions.GetPiecePos(boardState, white, 'p'), white) ? -40 : 0;
+
+            return hazardPenalty;
         }
 
         private static int GetPiecePositionValue(char piece, int index)
@@ -76,9 +112,23 @@ namespace ShallowRed
                 case 'q':
                     return blackQueenLocationValues[index];
                 case 'K':
-                    return whiteKingMidGameLocationValues[index];
+                    if (lateGame)
+                    {
+                        return whiteKingLateGameLocationValues[index];
+                    }
+                    else
+                    {
+                        return whiteKingMidGameLocationValues[index];
+                    }
                 case 'k':
-                    return blackKingMidGameLocationValues[index];
+                    if (lateGame)
+                    {
+                        return blackKingLateGameLocationValues[index];
+                    }
+                    else
+                    {
+                        return blackKingMidGameLocationValues[index];
+                    }
                 default:
                     throw new Exception("Unrecognized Character");
             }
@@ -93,6 +143,8 @@ namespace ShallowRed
                {'q', 900},
                {'k', 20000}
         };
+
+        private static bool lateGame = false;
 
         #region " Location Values "
         private static int[] whitPawnLocationValues = 
