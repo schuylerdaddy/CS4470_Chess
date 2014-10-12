@@ -32,4 +32,5 @@ namespace ShallowRed
         {
             list[pos] = board;
         }
+    }
 }
