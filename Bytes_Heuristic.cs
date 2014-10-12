@@ -46,7 +46,7 @@ namespace ShallowRed
         }
         private static int GetPiecePositionValue(Byte piece, int index)
         {
-            index = index - index / edgeIndex; // ignores the "/" character index
+            //index = index - index / edgeIndex; // ignores the "/" character index
             switch (piece)
             {
                 case 0x01:
