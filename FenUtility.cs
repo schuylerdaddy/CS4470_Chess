@@ -643,6 +643,19 @@ namespace ShallowRed
             }
             return 0;
         }
+
+        public static int GetPiecePos(char[] board, bool white, char piece)
+        {
+            char pieceChar = white ? Char.ToUpper(piece) : Char.ToLower(piece);
+            for (int i = 0; i < 71; ++i)
+            {
+                if (board[i] == pieceChar)
+                {
+                    return i;
+                }
+            }
+            return 0;
+        }
     }
         #endregion
 
