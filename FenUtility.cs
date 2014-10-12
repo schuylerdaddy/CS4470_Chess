@@ -399,7 +399,14 @@ namespace ShallowRed
 
         public static bool PieceNotSafe(char[] board, int piecePosition, bool white)
         {
-            return DiagonalCheck(board, white, piecePosition) || KnightCheck(board, white, piecePosition) || ColRowCheck(board, white, piecePosition);
+            if (piecePosition == -1)
+            {
+                return false;
+            }
+            else
+            {
+                return DiagonalCheck(board, white, piecePosition) || KnightCheck(board, white, piecePosition) || ColRowCheck(board, white, piecePosition);
+            }
         }
 
         public static bool InCheck(char[] board, bool white)
@@ -654,7 +661,7 @@ namespace ShallowRed
                     return i;
                 }
             }
-            return 0;
+            return -1;
         }
     }
         #endregion
