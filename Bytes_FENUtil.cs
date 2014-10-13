@@ -493,20 +493,20 @@ namespace ShallowRed
         {
             if (board[i].IsUpper()) //case upper
             {
-                if (i % COLUMN != COL1 && board[i + DOWNLEFT].IsLower())
+                if (i + DOWNLEFT > OUTOFBOUNDSLOW && i % COLUMN != COL1 && board[i + DOWNLEFT].IsLower())
                 {
                     return true;
                 }
-                else if (i % COLUMN != COL8 && board[i + DOWNRIGHT].IsLower())
+                else if (i + DOWNRIGHT > OUTOFBOUNDSLOW && i % COLUMN != COL8 && board[i + DOWNRIGHT].IsLower())
                     return true;
             }
             else
             {
-                if (i % COLUMN != COL1 && board[i + UPLEFT].IsUpper())
+                if (i + UPLEFT < OUTOFBOUNDSHIGH && i % COLUMN != COL1 && board[i + UPLEFT].IsUpper())
                 {
                     return true;
                 }
-                else if (i % COLUMN != COL8 && board[i + UPRIGHT].IsUpper())
+                else if (i + UPRIGHT < OUTOFBOUNDSHIGH && i % COLUMN != COL8 && board[i + UPRIGHT].IsUpper())
                     return true;
             }
             return false;
