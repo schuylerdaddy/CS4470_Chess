@@ -894,9 +894,9 @@ namespace ShallowRed
                 if (idx % COLUMN != COL8 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    if (allowCheck || !PieceNotSafe(temp, idx, white))
                     {
-                         if (!white)
+                        if (!white)
                         {
                             moves.AddForward(temp);
                         }
@@ -907,7 +907,7 @@ namespace ShallowRed
                 if (board.IsValidMove(white, ++idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    if (allowCheck || !PieceNotSafe(temp, idx, white))
                     {
                         if (!white)
                         {
@@ -920,7 +920,7 @@ namespace ShallowRed
                 if (++idx % COLUMN != COL1 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    if (allowCheck || !PieceNotSafe(temp, idx, white))
                     {
                         if (!white)
                         {
@@ -935,16 +935,16 @@ namespace ShallowRed
             if (idx % COLUMN != COL1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || PieceNotSafe(temp, idx, white))
-                        moves.Add(temp);
+                if (allowCheck || !PieceNotSafe(temp, idx, white))
+                    moves.Add(temp);
             }
             idx = i + LEFT;
             if (idx % COLUMN != COL8 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || PieceNotSafe(temp, idx, white))
-                     moves.Add(temp);
-                
+                if (allowCheck || !PieceNotSafe(temp, idx, white))
+                    moves.Add(temp);
+
             }
             idx = i + DOWNRIGHT;
             if (idx > -1)
@@ -952,7 +952,7 @@ namespace ShallowRed
                 if (i % COLUMN != COL8 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    if (allowCheck || !PieceNotSafe(temp, idx, white))
                     {
                         if (white)
                         {
@@ -965,7 +965,7 @@ namespace ShallowRed
                 if (board.IsValidMove(white, --idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    if (allowCheck || !PieceNotSafe(temp, idx, white))
                     {
                         if (white)
                         {
@@ -978,7 +978,7 @@ namespace ShallowRed
                 if (i % COLUMN != COL1 && board.IsValidMove(white, --idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    if (allowCheck || !PieceNotSafe(temp, idx, white))
                     {
                         if (white)
                         {
@@ -1013,12 +1013,12 @@ namespace ShallowRed
                 {
                     temp = board.MovePawn(i, i + UP, white);
                     if (allowCheck || !InCheck(temp, white))
-                        {
-                            if (PawnThreat(temp, i + UP))
-                                moves.AddCapture(temp);
-                            else
-                                moves.AddForward(temp);
-                        }
+                    {
+                        if (PawnThreat(temp, i + UP))
+                            moves.AddCapture(temp);
+                        else
+                            moves.AddForward(temp);
+                    }
                 }
                 if (board[i + UPLEFT].IsUpper() && i % COLUMN != COL1)
                 {
@@ -1041,12 +1041,12 @@ namespace ShallowRed
                     {
                         temp = board.MovePawn(i, i + DOWNDOWN, white);
                         if (allowCheck || !InCheck(temp, white))
-                            {
-                                if (PawnThreat(temp, i + DOWNDOWN))
-                                    moves.AddCapture(temp);
-                                else
-                                    moves.AddForward(temp);
-                            }
+                        {
+                            if (PawnThreat(temp, i + DOWNDOWN))
+                                moves.AddCapture(temp);
+                            else
+                                moves.AddForward(temp);
+                        }
                     }
                 }
                 if (board[i + DOWN] == _)
@@ -1054,7 +1054,7 @@ namespace ShallowRed
                     temp = board.MovePawn(i, i + DOWN, white);
                     if (allowCheck || !InCheck(temp, white))
                     {
-                        if(PawnThreat(temp,i+DOWN))
+                        if (PawnThreat(temp, i + DOWN))
                             moves.AddCapture(temp);
                         else
                             moves.AddForward(temp);
@@ -1262,7 +1262,7 @@ namespace ShallowRed
 
             pos = kingPos + LEFT;
             //Check first space for king as well as rook and queen
-            if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COLUMN)
+            if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL8)
             {
                 if (board[pos] == enemyKing)
                 {
@@ -1270,7 +1270,7 @@ namespace ShallowRed
                 }
             }
             // Move in that direction until you hit an edge or another piece
-            while (pos > OUTOFBOUNDSLOW && pos % COLUMN != COLUMN)
+            while (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL8)
             {
                 // If you hit a rook or a queen we're in check
                 if (board[pos] == enemyRook || board[pos] == enemyQueen)
@@ -1529,6 +1529,3 @@ namespace ShallowRed
         }
     }
 }
-
-
-
