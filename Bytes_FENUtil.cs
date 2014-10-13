@@ -525,7 +525,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, idx);
                     bool cap = board.TakesOpponentPiece(white, idx);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
@@ -551,7 +551,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, idx);
                     bool cap = board.TakesOpponentPiece(white, idx);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
@@ -579,7 +579,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, ix);
                     bool cap = board.TakesOpponentPiece(white, ix);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
@@ -604,7 +604,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, ix);
                     bool cap = board.TakesOpponentPiece(white, ix);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
@@ -658,7 +658,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, idx);
                     bool cap = board.TakesOpponentPiece(white, idx);
-                    if (allowCheck || !InCheck(board, white))
+                    if (allowCheck || !InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
@@ -684,7 +684,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, idx);
                     bool cap = board.TakesOpponentPiece(white, idx);
-                    if (allowCheck || !InCheck(board, white))
+                    if (allowCheck || !InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
@@ -710,7 +710,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, idx);
                     bool cap = board.TakesOpponentPiece(white, idx);
-                    if (allowCheck || !InCheck(board, white))
+                    if (allowCheck || !InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
@@ -1020,13 +1020,13 @@ namespace ShallowRed
                             moves.AddForward(temp);
                     }
                 }
-                if (board[i + UPLEFT].IsUpper() && i % COLUMN != COL1)
+                if (board[i + UPLEFT].IsUpper() && (i+UPLEFT) % COLUMN != COL8)
                 {
                     temp = board.MovePawn(i, i + UPLEFT, white);
                     if (allowCheck || !InCheck(temp, white))
                         moves.AddCapture(temp);
                 }
-                if (i < 54 && board[i + UPRIGHT].IsUpper() && i % COLUMN != COL8)
+                if (i < 54 && board[i + UPRIGHT].IsUpper() && (i+UPRIGHT) % COLUMN != COL1)
                 {
                     temp = board.MovePawn(i, i + UPRIGHT, white);
                     if (allowCheck || !InCheck(temp, white))
@@ -1060,16 +1060,16 @@ namespace ShallowRed
                             moves.AddForward(temp);
                     }
                 }
-                if (board[i + DOWNRIGHT].IsLower() && i % COLUMN != COL1)
+                if (board[i + DOWNRIGHT].IsLower() && (i+DOWNRIGHT) % COLUMN != COL1)
                 {
                     temp = board.MovePawn(i, i + DOWNRIGHT, white);
                     if (allowCheck || !InCheck(temp, white))
                         moves.AddCapture(temp);
                 }
-                if (i > 8 && board[i + DOWNLEFT].IsLower() && i % COLUMN != COL8)
+                if (i > 8 && board[i + DOWNLEFT].IsLower() && (i+DOWNLEFT) % COLUMN != COL8)
                 {
                     temp = board.MovePawn(i, i + DOWNLEFT, white);
-                    if (!InCheck(board, white))
+                    if (!InCheck(temp, white))
                         moves.AddCapture(temp);
                 }
             }
