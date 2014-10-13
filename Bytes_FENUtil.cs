@@ -61,22 +61,21 @@ namespace ShallowRed
         {
             return (b & UPPER_MASK) == 1;
         }
-
         public static bool IsLower(this byte b)
         {
             return (b & UPPER_MASK) == 0 && b != 0;
         }
 
-        public static byte ToUpper(this  byte b)
+        public static Predicate<byte> IsOpponent;
+
+        public static byte ToUpper(this byte b)
         {
             return b |= UPPER_MASK;
         }
-
         public static byte ToLower(this byte b)
         {
             return b &= LOWER_MASK;
         }
-
         public static ChessMove GenerateMove(this byte[] from, byte[] to)
         {
             int[] pos = new int[2];
@@ -88,7 +87,6 @@ namespace ShallowRed
                     pos[changes++] = i;
                 }
             }
-
             if (to[pos[1]] == _) //spot vacated
                 return new ChessMove(new ChessLocation(pos[1] % COLUMN, pos[1] / COLUMN), new ChessLocation(pos[0] % COLUMN, pos[0] / COLUMN));
             return new ChessMove(new ChessLocation(pos[0] % COLUMN, pos[0] / COLUMN), new ChessLocation(pos[1] % COLUMN, pos[1] / COLUMN));
@@ -110,7 +108,6 @@ namespace ShallowRed
             }
             return newForm.ToArray();
         }
-
         public static byte[] ToShallowRedFENBytes(this string originalFen)
         {
             byte[] bytes = new byte[OUTOFBOUNDSHIGH];
@@ -147,7 +144,6 @@ namespace ShallowRed
             }
             return bytes;
         }
-
         public static byte[] Move(this byte[] board, int fromX, int fromY, int toX, int toY)
         {
             return board.Move(fromX + (COLUMN * fromY), toX + (COLUMN * toY));
@@ -190,20 +186,359 @@ namespace ShallowRed
             return board[to] == _;
         }
 
+        #region threat assesment algortihms
+
+        public static bool AdjacentThreat(byte[] board, int i)
+        {
+            if (board[i].IsUpper()) //case white
+            {
+                int idx = i + UP;
+                while (idx < OUTOFBOUNDSHIGH)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += UP;
+                }
+
+                idx = i + DOWN;
+                while (idx > OUTOFBOUNDSLOW)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += DOWN;
+                }
+
+                idx = i + RIGHT;
+                while (idx % COLUMN != COL1)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += RIGHT;
+                }
+
+                idx = i + LEFT;
+                while (idx > OUTOFBOUNDSLOW && idx % COLUMN != COL8)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += LEFT;
+                }
+            }
+            else //case lower
+            {
+                int idx = i + UP;
+                while (idx < OUTOFBOUNDSHIGH)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += UP;
+                }
+
+                idx = i + DOWN;
+                while (idx > OUTOFBOUNDSLOW)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += DOWN;
+                }
+
+                idx = i + RIGHT;
+                while (idx % COLUMN != COL1)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += RIGHT;
+                }
+
+                idx = i + LEFT;
+                while (idx > OUTOFBOUNDSLOW && idx % COLUMN != COL8)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += LEFT;
+                }
+            }
+            return false;
+        }
+
+        public static bool DiagThreat(byte[] board, int i)
+        {
+            if (board[i].IsUpper()) //case white
+            {
+                int idx = i + UPRIGHT;
+                while (idx < OUTOFBOUNDSHIGH && idx % COLUMN != COL1)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += UPRIGHT;
+                }
+
+                idx = i + UPLEFT;
+                while (idx < OUTOFBOUNDSHIGH && idx % COLUMN != COL8)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += UPLEFT;
+                }
+
+                idx = i + DOWNRIGHT;
+                while (idx > OUTOFBOUNDSLOW && idx % COLUMN != COL1)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += DOWNRIGHT;
+                }
+
+                idx = i + DOWNLEFT;
+                while (idx > OUTOFBOUNDSLOW && idx % COLUMN != COL8)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        return true;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        break;
+                    }
+                    idx += DOWNLEFT;
+                }
+            }
+            else //case lower
+            {
+                int idx = i + UPRIGHT;
+                while (idx < OUTOFBOUNDSHIGH && idx % COLUMN != COL1)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += UPRIGHT;
+                }
+
+                idx = i + UPLEFT;
+                while (idx < OUTOFBOUNDSHIGH && idx % COLUMN != COL8)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += UPLEFT;
+                }
+
+                idx = i + DOWNRIGHT;
+                while (idx > OUTOFBOUNDSLOW && idx % COLUMN != COL1)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += DOWNRIGHT;
+                }
+
+                idx = i + DOWNLEFT;
+                while (idx > OUTOFBOUNDSLOW && idx % COLUMN != COL8)
+                {
+                    if (board[idx].IsLower())
+                    {
+                        break;
+                    }
+                    else if (board[idx].IsUpper())
+                    {
+                        return true;
+                    }
+                    idx += DOWNLEFT;
+                }
+            }
+            return false;
+        }
+
+        public static bool KnightThreat(byte[] board, int i)
+        {
+            if (board[i].IsUpper()) //case upper
+            {
+                int idx = i + UPUPRIGHT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN < COL8 && board[idx].IsLower())
+                    return true;
+                idx = i + UPUPLEFT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN > COL1 && board[idx].IsLower())
+                    return true;
+                idx = i + UPRIGHTRIGHT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN < COL7 && board[idx].IsLower())
+                    return true;
+                idx = i + UPLEFTLEFT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN > COL2 && board[idx].IsLower())
+                    return true;
+                idx = i + DOWNDOWNRIGHT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN < COL8 && board[idx].IsLower())
+                    return true;
+                idx = i + DOWNDOWNLEFT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN > COL1 && board[idx].IsLower())
+                    return true;
+                idx = i + DOWNRIGHTRIGHT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN < COL7 && board[idx].IsLower())
+                    return true;
+                idx = i + DOWNLEFTLEFT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN > COL2 && board[idx].IsLower())
+                    return true;
+            }
+            else
+            {
+                int idx = i + UPUPRIGHT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN < COL8 && board[idx].IsUpper())
+                    return true;
+                idx = i + UPUPLEFT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN > COL1 && board[idx].IsUpper())
+                    return true;
+                idx = i + UPRIGHTRIGHT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN < COL7 && board[idx].IsUpper())
+                    return true;
+                idx = i + UPLEFTLEFT;
+                if (idx < OUTOFBOUNDSHIGH && i % COLUMN > COL2 && board[idx].IsUpper())
+                    return true;
+                idx = i + DOWNDOWNRIGHT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN < COL8 && board[idx].IsUpper())
+                    return true;
+                idx = i + DOWNDOWNLEFT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN > COL1 && board[idx].IsUpper())
+                    return true;
+                idx = i + DOWNRIGHTRIGHT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN < COL7 && board[idx].IsUpper())
+                    return true;
+                idx = i + DOWNLEFTLEFT;
+                if (idx > OUTOFBOUNDSLOW && i % COLUMN > COL2 && board[idx].IsUpper())
+                    return true;
+            }
+            return false;
+        }
+
+        static public bool PawnThreat(byte[] board, int i)
+        {
+            if (board[i].IsUpper()) //case upper
+            {
+                if (i % COLUMN != COL1 && board[i + DOWNLEFT].IsLower())
+                {
+                    return true;
+                }
+                else if (i % COLUMN != COL8 && board[i + DOWNRIGHT].IsLower())
+                    return true;
+            }
+            else
+            {
+                if (i % COLUMN != COL1 && board[i + UPLEFT].IsUpper())
+                {
+                    return true;
+                }
+                else if (i % COLUMN != COL8 && board[i + UPRIGHT].IsUpper())
+                    return true;
+            }
+            return false;
+        }
+        #endregion
+
         #region MapAdditions
 
-        public static void AddAdjacentMaps(this byte[] board, bool white, int i, ref LightList moves, bool allowCheck)
+        public static void AddAdjacentMaps(this byte[] board, bool white, int i, ref BoardBuffer moves, bool allowCheck)
         {
             int idx = i + UP;
             byte[] temp;
             while (idx < OUTOFBOUNDSHIGH)
             {
-                if (IsValidMove(board, white, idx))
+                if (board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (!InCheck(temp, white))
-                        moves.Add(temp);
-                    if (TakesOpponentPiece(board, white, idx))
+                    bool cap = board.TakesOpponentPiece(white, idx);
+                    if (!InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, idx, white))
+                            moves.AddUnSafe(temp);
+                        else if (AdjacentThreat(temp, idx))
+                            moves.AddThreat(temp);
+                        else if (!white)
+                            moves.AddForward(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
@@ -215,9 +550,21 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
-                    if (TakesOpponentPiece(board, white, idx))
+                    bool cap = board.TakesOpponentPiece(white, idx);
+                    if (!InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, idx, white))
+                            moves.AddUnSafe(temp);
+                        else if (AdjacentThreat(temp, idx))
+                            moves.AddThreat(temp);
+                        else if (white)
+                            moves.AddForward(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
@@ -227,12 +574,23 @@ namespace ShallowRed
             int bse = i - idx;
             while (--idx > -1)
             {
-                if (IsValidMove(board, white, bse + idx))
+                int ix = bse + idx;
+                if (IsValidMove(board, white, ix))
                 {
-                    temp = board.Move(i, bse + idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
-                    if (TakesOpponentPiece(board, white, bse + idx))
+                    temp = board.Move(i, ix);
+                    bool cap = board.TakesOpponentPiece(white, ix);
+                    if (!InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, ix, white))
+                            moves.AddUnSafe(temp);
+                        else if (AdjacentThreat(temp, ix))
+                            moves.AddThreat(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
@@ -241,18 +599,30 @@ namespace ShallowRed
             bse = i - idx;
             while (++idx < 8)
             {
-                if (IsValidMove(board, white, bse + idx))
+                int ix = bse + idx;
+                if (IsValidMove(board, white, ix))
                 {
-                    temp = board.Move(i, bse + idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
-                    if (TakesOpponentPiece(board, white, bse + idx))
+                    temp = board.Move(i, ix);
+                    bool cap = board.TakesOpponentPiece(white, ix);
+                    if (!InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, ix, white))
+                            moves.AddUnSafe(temp);
+                        else if (AdjacentThreat(temp, ix))
+                            moves.AddThreat(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
             }
         }
-        public static void AddDiagonalMaps(this byte[] board, bool white, int i, ref LightList moves, bool allowCheck)
+
+        public static void AddDiagonalMaps(this byte[] board, bool white, int i, ref BoardBuffer moves, bool allowCheck)
         {
             byte[] temp;
             int idx = i + UPLEFT;
@@ -261,9 +631,21 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
-                    if (board.TakesOpponentPiece(white, idx))
+                    bool cap = board.TakesOpponentPiece(white, idx);
+                    if (allowCheck || !InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, idx, white))
+                            moves.AddUnSafe(temp);
+                        else if (DiagThreat(temp, idx))
+                            moves.AddThreat(temp);
+                        else if (!white)
+                            moves.AddForward(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
@@ -275,9 +657,21 @@ namespace ShallowRed
                 if (IsValidMove(board, white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
-                    if (board.TakesOpponentPiece(white, idx))
+                    bool cap = board.TakesOpponentPiece(white, idx);
+                    if (allowCheck || !InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, idx, white))
+                            moves.AddUnSafe(temp);
+                        else if (DiagThreat(temp, idx))
+                            moves.AddThreat(temp);
+                        else if (!white)
+                            moves.AddForward(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
@@ -289,9 +683,21 @@ namespace ShallowRed
                 if (board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
-                    if (board.TakesOpponentPiece(white, idx))
+                    bool cap = board.TakesOpponentPiece(white, idx);
+                    if (allowCheck || !InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, idx, white))
+                            moves.AddUnSafe(temp);
+                        else if (DiagThreat(temp, idx))
+                            moves.AddThreat(temp);
+                        else if (white)
+                            moves.AddForward(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
@@ -303,16 +709,28 @@ namespace ShallowRed
                 if (board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
-                    if (board.TakesOpponentPiece(white, idx))
+                    bool cap = board.TakesOpponentPiece(white, idx);
+                    if (allowCheck || !InCheck(board, white))
+                    {
+                        if (cap)
+                            moves.AddCapture(temp);
+                        else if (PieceNotSafe(temp, idx, white))
+                            moves.AddUnSafe(temp);
+                        else if (DiagThreat(temp, idx))
+                            moves.AddThreat(temp);
+                        else if (white)
+                            moves.AddForward(temp);
+                        else
+                            moves.Add(temp);
+                    }
+                    if (cap)
                         break;
                 }
                 else break;
                 idx += DOWNRIGHT;
             }
         }
-        public static void AddKnightMoves(this byte[] board, bool white, int i, ref LightList moves, bool allowCheck)
+        public static void AddKnightMoves(this byte[] board, bool white, int i, ref BoardBuffer moves, bool allowCheck)
         {
             int originRow = i % COLUMN;
             int idx = i + UPUPRIGHT;
@@ -320,97 +738,213 @@ namespace ShallowRed
             if (idx < OUTOFBOUNDSHIGH && originRow < COL8 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (!white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
             idx = i + UPUPLEFT;
             if (idx < OUTOFBOUNDSHIGH && originRow > COL1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (!white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
             idx = i + UPRIGHTRIGHT;
             if (idx < OUTOFBOUNDSHIGH && originRow < COL7 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (!white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
             idx = i + UPLEFTLEFT;
             if (idx < OUTOFBOUNDSHIGH && originRow > COL2 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (!white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
             idx = i + DOWNDOWNLEFT;
             if (idx > OUTOFBOUNDSLOW && originRow > COL1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
             idx = i + DOWNDOWNRIGHT;
             if (idx > OUTOFBOUNDSLOW && originRow < COL8 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
             idx = i + DOWNLEFTLEFT;
             if (idx > OUTOFBOUNDSLOW && originRow > COL2 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
             idx = i + DOWNRIGHTRIGHT;
             if (idx > OUTOFBOUNDSLOW && originRow < COL7 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || !InCheck(board, white))
+                {
+                    if (white ? board[idx].IsLower() : board[idx].IsUpper())
+                        moves.AddCapture(temp);
+                    else if (PieceNotSafe(temp, idx, white))
+                        moves.AddUnSafe(temp);
+                    else if (KnightThreat(temp, idx))
+                        moves.AddThreat(temp);
+                    else if (white)
+                        moves.AddForward(temp);
+                    else
+                        moves.Add(temp);
+                }
             }
         }
-        public static void AddKingMoves(this byte[] board, bool white, int i, ref LightList moves, bool allowCheck)
+        public static void AddKingMoves(this byte[] board, bool white, int i, ref BoardBuffer moves, bool allowCheck)
         {
             byte[] temp;
+
+            if (white)
+                IsOpponent = IsLower;
+            else
+                IsOpponent = IsUpper;
+
             int idx = i + UPLEFT;
             if (idx < OUTOFBOUNDSHIGH)
             {
                 if (idx % COLUMN != COL8 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    {
+                         if (!white)
+                        {
+                            moves.AddForward(temp);
+                        }
+                        else
+                            moves.Add(temp);
+                    }
                 }
                 if (board.IsValidMove(white, ++idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    {
+                        if (!white)
+                        {
+                            moves.AddForward(temp);
+                        }
+                        else
+                            moves.Add(temp);
+                    }
                 }
                 if (++idx % COLUMN != COL1 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    {
+                        if (!white)
+                        {
+                            moves.AddForward(temp);
+                        }
+                        else
+                            moves.Add(temp);
+                    }
                 }
             }
             idx = i + RIGHT;
             if (idx % COLUMN != COL1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || PieceNotSafe(temp, idx, white))
+                        moves.Add(temp);
             }
             idx = i + LEFT;
             if (idx % COLUMN != COL8 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(temp, white))
-                    moves.Add(temp);
+                if (allowCheck || PieceNotSafe(temp, idx, white))
+                     moves.Add(temp);
+                
             }
             idx = i + DOWNRIGHT;
             if (idx > -1)
@@ -418,24 +952,45 @@ namespace ShallowRed
                 if (i % COLUMN != COL8 && board.IsValidMove(white, idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    {
+                        if (white)
+                        {
+                            moves.AddForward(temp);
+                        }
+                        else
+                            moves.Add(temp);
+                    }
                 }
                 if (board.IsValidMove(white, --idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    {
+                        if (white)
+                        {
+                            moves.AddForward(temp);
+                        }
+                        else
+                            moves.Add(temp);
+                    }
                 }
                 if (i % COLUMN != COL1 && board.IsValidMove(white, --idx))
                 {
                     temp = board.Move(i, idx);
-                    if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                    if (allowCheck || PieceNotSafe(temp, idx, white))
+                    {
+                        if (white)
+                        {
+                            moves.AddForward(temp);
+                        }
+                        else
+                            moves.Add(temp);
+                    }
                 }
             }
         }
-        public static void AddPawnMoves(this byte[] board, bool white, int i, ref LightList moves, bool allowCheck)
+        public static void AddPawnMoves(this byte[] board, bool white, int i, ref BoardBuffer moves, bool allowCheck)
         {
             byte[] temp;
             if (!white)
@@ -446,26 +1001,36 @@ namespace ShallowRed
                     {
                         temp = board.MovePawn(i, i + UPUP, white);
                         if (allowCheck || allowCheck || !InCheck(temp, white))
-                            moves.Add(temp);
+                        {
+                            if (PawnThreat(temp, i + UPUP))
+                                moves.AddCapture(temp);
+                            else
+                                moves.AddForward(temp);
+                        }
                     }
                 }
                 if (board[i + UP] == _)
                 {
                     temp = board.MovePawn(i, i + UP, white);
                     if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                        {
+                            if (PawnThreat(temp, i + UP))
+                                moves.AddCapture(temp);
+                            else
+                                moves.AddForward(temp);
+                        }
                 }
-                if (board[i + UPLEFT].IsUpper() && (i+UPLEFT) % COLUMN != COL8)
+                if (board[i + UPLEFT].IsUpper() && i % COLUMN != COL1)
                 {
                     temp = board.MovePawn(i, i + UPLEFT, white);
                     if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                        moves.AddCapture(temp);
                 }
-                if (i < 54 && board[i + UPRIGHT].IsUpper() && (i+UPRIGHT) % COLUMN != COL1)
+                if (i < 54 && board[i + UPRIGHT].IsUpper() && i % COLUMN != COL8)
                 {
                     temp = board.MovePawn(i, i + UPRIGHT, white);
                     if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                        moves.AddCapture(temp);
                 }
             }
             else
@@ -476,26 +1041,36 @@ namespace ShallowRed
                     {
                         temp = board.MovePawn(i, i + DOWNDOWN, white);
                         if (allowCheck || !InCheck(temp, white))
-                            moves.Add(temp);
+                            {
+                                if (PawnThreat(temp, i + DOWNDOWN))
+                                    moves.AddCapture(temp);
+                                else
+                                    moves.AddForward(temp);
+                            }
                     }
                 }
                 if (board[i + DOWN] == _)
                 {
                     temp = board.MovePawn(i, i + DOWN, white);
                     if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                    {
+                        if(PawnThreat(temp,i+DOWN))
+                            moves.AddCapture(temp);
+                        else
+                            moves.AddForward(temp);
+                    }
                 }
-                if (board[i + DOWNRIGHT].IsLower() && (i+DOWNRIGHT) % COLUMN != COL1)
+                if (board[i + DOWNRIGHT].IsLower() && i % COLUMN != COL1)
                 {
                     temp = board.MovePawn(i, i + DOWNRIGHT, white);
                     if (allowCheck || !InCheck(temp, white))
-                        moves.Add(temp);
+                        moves.AddCapture(temp);
                 }
-                if (i > 8 && board[i + DOWNLEFT].IsLower() && (i+DOWNLEFT) % COLUMN != COL8)
+                if (i > 8 && board[i + DOWNLEFT].IsLower() && i % COLUMN != COL8)
                 {
                     temp = board.MovePawn(i, i + DOWNLEFT, white);
-                    if (!InCheck(temp, white))
-                        moves.Add(temp);
+                    if (!InCheck(board, white))
+                        moves.AddCapture(temp);
                 }
             }
         }
@@ -506,7 +1081,14 @@ namespace ShallowRed
 
         public static bool PieceNotSafe(byte[] board, int piecePosition, bool white)
         {
-            return DiagonalCheck(board, white, piecePosition) || KnightCheck(board, white, piecePosition) || ColRowCheck(board, white, piecePosition);
+            if (piecePosition == -1)
+            {
+                return false;
+            }
+            else
+            {
+                return DiagonalCheck(board, white, piecePosition) || KnightCheck(board, white, piecePosition) || ColRowCheck(board, white, piecePosition);
+            }
         }
 
         public static bool InCheck(byte[] board, bool white)
@@ -650,7 +1232,7 @@ namespace ShallowRed
 
             pos = kingPos + RIGHT;
             //Check first space for king as well as rook and queen
-            if (pos % COLUMN != COL1)
+            if (pos % COLUMN != 0)
             {
                 if (board[pos] == enemyKing)
                 {
@@ -658,7 +1240,7 @@ namespace ShallowRed
                 }
             }
             // Move in that direction until you hit an edge or another piece
-            while (pos % COLUMN != COL1)
+            while (pos % COLUMN != 0)
             {
                 // If you hit a rook or a queen we're in check
                 if (board[pos] == enemyRook || board[pos] == enemyQueen)
@@ -680,7 +1262,7 @@ namespace ShallowRed
 
             pos = kingPos + LEFT;
             //Check first space for king as well as rook and queen
-            if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL8)
+            if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COLUMN)
             {
                 if (board[pos] == enemyKing)
                 {
@@ -688,7 +1270,7 @@ namespace ShallowRed
                 }
             }
             // Move in that direction until you hit an edge or another piece
-            while (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL8)
+            while (pos > OUTOFBOUNDSLOW && pos % COLUMN != COLUMN)
             {
                 // If you hit a rook or a queen we're in check
                 if (board[pos] == enemyRook || board[pos] == enemyQueen)
@@ -737,7 +1319,7 @@ namespace ShallowRed
             // Check Pawns:
             if (pos < OUTOFBOUNDSHIGH && pos % COLUMN != COL8)
             {
-                if ((board[pos] == enemyPawn && !white) || board[pos] == enemyKing)
+                if ((!white && board[pos] == enemyPawn) || board[pos] == enemyKing)
                 {
                     return true;
                 }
@@ -766,7 +1348,7 @@ namespace ShallowRed
             // Check Pawns:
             if (pos < OUTOFBOUNDSHIGH && pos % COLUMN != COL1)
             {
-                if ((board[pos] == enemyPawn && !white) || board[pos] == enemyKing)
+                if ((!white && board[pos] == enemyPawn) || board[pos] == enemyKing)
                 {
                     return true;
                 }
@@ -796,7 +1378,7 @@ namespace ShallowRed
             // Check Pawns:
             if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL8)
             {
-                if ((board[pos] == enemyPawn && white) || board[pos] == enemyKing)
+                if ((white && board[pos] == enemyPawn) || board[pos] == enemyKing)
                 {
                     return true;
                 }
@@ -826,7 +1408,7 @@ namespace ShallowRed
             // Check Pawns:
             if (pos > OUTOFBOUNDSLOW && pos % COLUMN != COL1)
             {
-                if ((board[pos] == enemyPawn && white) || board[pos] == enemyKing)
+                if ((white && board[pos] == enemyPawn) || board[pos] == enemyKing)
                 {
                     return true;
                 }
@@ -866,10 +1448,25 @@ namespace ShallowRed
             return -1;
         }
 
+        public static int GetPiecePos(byte[] board, bool white, byte piece)
+        {
+            byte pieceChar = white ? piece.ToUpper() : piece.ToLower();
+            for (int i = 0; i < OUTOFBOUNDSHIGH; ++i)
+            {
+                if (board[i] == pieceChar)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        #endregion
         public static LightList GetAvailableMoves(byte[] board, ChessColor color, bool allowCheck)
         {
             bool white = color == ChessColor.White;
             LightList moves = new LightList();
+            BoardBuffer buff = new BoardBuffer();
             //iterate thru entire board {64} including row delimiters {7}
 
             for (int i = 0; i < OUTOFBOUNDSHIGH; ++i)
@@ -879,23 +1476,23 @@ namespace ShallowRed
                     switch (board[i])
                     {
                         case 0x02:
-                            board.AddPawnMoves(white, i, ref moves, allowCheck);
+                            board.AddPawnMoves(white, i, ref buff, allowCheck);
                             break;
                         case 0x04:
-                            board.AddAdjacentMaps(white, i, ref moves, allowCheck);
+                            board.AddAdjacentMaps(white, i, ref buff, allowCheck);
                             break;
                         case 0x06:
-                            board.AddDiagonalMaps(white, i, ref moves, allowCheck);
+                            board.AddDiagonalMaps(white, i, ref buff, allowCheck);
                             break;
                         case 0x08:
-                            board.AddKnightMoves(white, i, ref moves, allowCheck);
+                            board.AddKnightMoves(white, i, ref buff, allowCheck);
                             break;
                         case 0x0A:
-                            board.AddAdjacentMaps(white, i, ref moves, allowCheck);
-                            board.AddDiagonalMaps(white, i, ref moves, allowCheck);
+                            board.AddAdjacentMaps(white, i, ref buff, allowCheck);
+                            board.AddDiagonalMaps(white, i, ref buff, allowCheck);
                             break;
                         case 0x0C:
-                            board.AddKingMoves(white, i, ref moves, allowCheck);
+                            board.AddKingMoves(white, i, ref buff, allowCheck);
                             break;
                         default: break;
                     }
@@ -905,30 +1502,33 @@ namespace ShallowRed
                     switch (board[i])
                     {
                         case 0x01:
-                            board.AddPawnMoves(white, i, ref moves, allowCheck);
+                            board.AddPawnMoves(white, i, ref buff, allowCheck);
                             break;
                         case 0x03:
-                            board.AddAdjacentMaps(white, i, ref moves, allowCheck);
+                            board.AddAdjacentMaps(white, i, ref buff, allowCheck);
                             break;
                         case 0x05:
-                            board.AddDiagonalMaps(white, i, ref moves, allowCheck);
+                            board.AddDiagonalMaps(white, i, ref buff, allowCheck);
                             break;
                         case 0x07:
-                            board.AddKnightMoves(white, i, ref moves, allowCheck);
+                            board.AddKnightMoves(white, i, ref buff, allowCheck);
                             break;
                         case 0x09:
-                            board.AddAdjacentMaps(white, i, ref moves, allowCheck);
-                            board.AddDiagonalMaps(white, i, ref moves, allowCheck);
+                            board.AddAdjacentMaps(white, i, ref buff, allowCheck);
+                            board.AddDiagonalMaps(white, i, ref buff, allowCheck);
                             break;
                         case 0x0B:
-                            board.AddKingMoves(white, i, ref moves, allowCheck);
+                            board.AddKingMoves(white, i, ref buff, allowCheck);
                             break;
                         default: break;
                     }
                 }
             }
-            return moves;
+
+            return LightList.ConvertBuffer(buff);
         }
     }
-        #endregion
 }
+
+
+

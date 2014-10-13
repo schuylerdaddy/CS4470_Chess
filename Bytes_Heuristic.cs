@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UvsChess;
+
 namespace ShallowRed
 {
     public static class Heuristic
     {
         public static AILoggerCallback Log { get; set; }
         private const int edgeIndex = 8;
+
         /// <summary>
         /// Purpose: To calculate a heuristic value for the given board state
         /// </summary>
@@ -17,8 +19,11 @@ namespace ShallowRed
         /// <returns>integer representing the heuristic</returns>
         public static int GetHeuristicValue(byte[] boardState, ChessColor color)
         {
-            return GetPieceValueHeuristic(boardState, color);
+            int pH = GetPieceValueHeuristic(boardState, color);
+            int pS = PieceSafety(boardState, color);
+            return pH + pS;
         }
+
         /// <summary>
         /// Purpose: To calculate a heuristic based purely off piece value
         /// </summary>
@@ -39,11 +44,47 @@ namespace ShallowRed
                         blackValue += (pieceValues[boardState[i]] + GetPiecePositionValue(boardState[i], i));
                 }
             }
+
+            //Log("WV -" + whiteValue.ToString());
+            //Log("BV -" + blackValue.ToString());
+
             if (color == ChessColor.White)
+            {
+                if (whiteValue - 20000 < 1500)
+                {
+                    lateGame = true;
+                }
                 return whiteValue - blackValue;
+            }
             else
+            {
+                if (blackValue - 20000 < 1500)
+                {
+                    lateGame = true;
+                }
                 return blackValue - whiteValue;
+            }
         }
+
+        /// <summary>
+        /// Purpose: Lower the Heuristic value if our queen is put in danger
+        /// </summary>
+        /// <param name="boardState"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private static int PieceSafety(byte[] boardState, ChessColor color)
+        {
+            int hazardPenalty = 0;
+            bool white = color == ChessColor.White;
+            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.q), white) ? -400 : 0;
+            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.r), white) ? -200 : 0;
+            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.n), white) ? -150 : 0;
+            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.b), white) ? -155 : 0;
+            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.p), white) ? -40 : 0;
+
+            return hazardPenalty;
+        }
+
         private static int GetPiecePositionValue(Byte piece, int index)
         {
             //index = index - index / edgeIndex; // ignores the "/" character index
@@ -70,9 +111,23 @@ namespace ShallowRed
                 case 0x0A:
                     return blackQueenLocationValues[index];
                 case 0x0B:
-                    return whiteKingMidGameLocationValues[index];
+                    if (lateGame)
+                    {
+                        return whiteKingLateGameLocationValues[index];
+                    }
+                    else
+                    {
+                        return whiteKingMidGameLocationValues[index];
+                    }
                 case 0x0C:
-                    return blackKingMidGameLocationValues[index];
+                    if (lateGame)
+                    {
+                        return blackKingLateGameLocationValues[index];
+                    }
+                    else
+                    {
+                        return blackKingMidGameLocationValues[index];
+                    }
                 default:
                     throw new Exception("Unrecognized Character");
             }
@@ -92,6 +147,9 @@ namespace ShallowRed
 {0x0B, 20000}, //Kings
 {0x0C, 20000}
 };
+
+        private static bool lateGame = false;
+
         #region " Location Values "
         private static int[] whitPawnLocationValues =
 {
@@ -250,4 +308,3 @@ namespace ShallowRed
         #endregion
     }
 }
-
