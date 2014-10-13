@@ -24,12 +24,10 @@ namespace ShallowRed
         {
             TimeSpan maxTime = TimeSpan.FromMilliseconds(5500);
             byte[] initialBoard = (byte[])SRFen.Clone();
-            bool white;
+            bool white= color == ChessColor.White? true:false;
             int alpha = -10000;
             int beta = 10000;
             int cutoff = 4;
-            if (color == ChessColor.White) white = true;
-            else white = false;
             int depth = 0;
             Stopwatch timer = new Stopwatch();
             timer.Start();
@@ -43,7 +41,7 @@ namespace ShallowRed
                 cutoff += 2;
                 byte[] temp = (byte[])initialBoard.Clone();
                 h = minValue(ref temp, depth + 1, white, alpha, beta, cutoff, bestSoFar, ref timer);
-                if (h != -9999) bestSoFar = (byte[])temp.Clone();
+                if (temp!=null) bestSoFar = (byte[])temp.Clone();
                 if (h == -5000) 
                     return bestSoFar;
             }
@@ -55,12 +53,11 @@ namespace ShallowRed
         {
             TimeSpan maxTime = TimeSpan.FromMilliseconds(5500);
             ChessColor color = (white ? ChessColor.White : ChessColor.Black);
-            int hValue;
+            int hValue, count;
             if (depth == cutoff)
                 return Heuristic.GetHeuristicValue(board, color);
             LightList childrenBoard = FEN.GetAvailableMoves(board, color, false);
-
-            int count = childrenBoard.Count;
+            count = childrenBoard.Count;
             if (count == 0){ //no moves available
                if (FEN.InCheck(board, white))
                     return -5000;//checkmate
@@ -82,25 +79,19 @@ namespace ShallowRed
                     hValue = minValue(ref tempBoard, depth + 1, !white, alpha, beta, cutoff, ref timer);
                 else
                     return -9999;
-                
-                if (depth == 1)
-                {
+                if (depth == 1){
                     if (maximumValue == hValue){
                         //choose randomly between current choice and this move
-
                         Random rnd = new Random();
                         int value = rnd.Next(0, 1);
                         if (value == 0)
                             board = tempBoard;
                     }
-                    else if (hValue > maximumValue)
-                    {
+                    else if (hValue > maximumValue) {
                         maximumValue = hValue;
                         board = childrenBoard[i];
-
                     }
-                    if (maximumValue >= beta)
-                    {
+                    if (maximumValue >= beta){
                         hValue = maximumValue;
                         childrenBoard = null;
                         return hValue;
@@ -110,8 +101,7 @@ namespace ShallowRed
                 else
                 {
                     maximumValue = Math.Max(maximumValue, hValue);
-                    if (maximumValue >= beta)
-                    {
+                    if (maximumValue >= beta){
                         hValue = maximumValue;
                         childrenBoard = null;
                         return hValue;
@@ -121,7 +111,8 @@ namespace ShallowRed
                 ++i;
             }
             childrenBoard = null;
-            if (timer.Elapsed > maxTime) return -9999;
+            if (timer.Elapsed > maxTime) 
+                return -9999;
             hValue = maximumValue;
 
             return hValue;
@@ -148,13 +139,13 @@ namespace ShallowRed
             //sort array of moves
             int[] Hchildren = new int[count];
             for (int idx = 0; idx < count; ++idx)
-            {
                 Hchildren[idx] = Heuristic.GetHeuristicValue(childrenBoard[idx], color);
-            }
             sort(ref childrenBoard, ref Hchildren);
             int minimumValue = 10000;
             int i = 0;
             byte[] tempBoard = null;
+            int move = -99;
+            int moveFirst = -99;
             while (i < count)
             { //process all the children move
                     tempBoard = childrenBoard[i];
@@ -163,24 +154,29 @@ namespace ShallowRed
                     else
                         return -9999;
                 if (depth == 1) {
-                    if (hValue == -5000)
-                    {
+                    if (hValue == -5000) {
                         board = childrenBoard[i];
                         childrenBoard = null;
+                       
+                       Log("move position: " + i + " count=" + count);
                         return hValue;
                     }
                     if (minimumValue == hValue){//store move into list of moves of same value
                         equalMoves.Add(tempBoard);
+                        move = i;
                     }
                     else if (hValue < minimumValue){//new minimum value, reset the move list
                         minimumValue = hValue;
                         board = childrenBoard[i];
+                        move = i;
+                        moveFirst = i;
                         equalMoves.Empty();
                         equalMoves.Add(board);
                     }
                     if (minimumValue <= alpha){
                         board=getRandomMove(equalMoves);
                         childrenBoard = null;
+                       Log("move position: " + move + " count=" + count);
                         return hValue;
                     }
                     beta = Math.Min(beta, minimumValue);
@@ -203,7 +199,9 @@ namespace ShallowRed
             if (depth == 1)
             {
                 board = getRandomMove(equalMoves);
+                Log("movefirst position: " + moveFirst + "move last " +move+" count=" + count);
             }
+
             childrenBoard = null;
             if (timer.Elapsed > maxTime) return -9999;
             hValue = minimumValue;
@@ -217,11 +215,12 @@ namespace ShallowRed
             ChessColor color = (white ? ChessColor.White : ChessColor.Black);
             int hValue;
             LightList equalMoves = new LightList();
+            TimeSpan maxTime = TimeSpan.FromMilliseconds(5500);
            
             LightList childrenBoard = FEN.GetAvailableMoves(board, color, false);
             int count = childrenBoard.Count;
             if (count == 0)
-            { //no moves available
+            { 
                 if (FEN.InCheck(board, white))
                     return -5000;//checkmate
                 else
@@ -254,77 +253,74 @@ namespace ShallowRed
             }
             //prioritize previously found best move
             if (indexFound != 0){//swap
-                byte[] temp;
-                temp = childrenBoard[0];
-                childrenBoard.Replace(childrenBoard[indexFound], 0);
-                childrenBoard.Replace(temp, indexFound);
+                shift(ref childrenBoard, ref Hchildren, indexFound);
             }
             int minimumValue = 10000;
             int i = 0;
             byte[] tempBoard = null;
+            int move = -99;
+            int moveFirst = -99;
             while (i < count)
             { //process all the children moves
-                if (depth != cutoff)
+                tempBoard = childrenBoard[i];
+                if (timer.Elapsed < maxTime)
                 {
-                    tempBoard = childrenBoard[i];
                     hValue = maxValue(ref tempBoard, depth + 1, !white, alpha, beta, cutoff, ref timer);
-                }
-                else //get heuristics value
-                    hValue = Hchildren[i];
-                if (depth == 1)
-                {
-                    if (hValue == -5000)
+                    if (hValue == -9999)
                     {
-                        board = childrenBoard[i];
-                        childrenBoard = null;
-                        return hValue;
+                        Log("i: " + i);
+                        break;
                     }
-                    if (minimumValue == hValue)
-                    {
-                       equalMoves.Add(tempBoard);
-                    }
-                    else if (hValue < minimumValue)
-                    {
-                        minimumValue = hValue;
-                        board = childrenBoard[i];
-                        equalMoves.Empty();
-                        equalMoves.Add(board);
-                    }
-                    if (minimumValue <= alpha)
-                    {
-                        board = getRandomMove(equalMoves);
-                        childrenBoard = null;
-                        return hValue;
-                    }
-                    beta = Math.Min(beta, minimumValue);
                 }
                 else
-                {
-                    minimumValue = Math.Min(minimumValue, hValue);
-                    if (minimumValue <= alpha)
-                    {
-                        hValue = minimumValue;
-                        childrenBoard = null;
-                        return hValue;
-                    }
-                    beta = Math.Min(beta, minimumValue);
-                    if (minimumValue == -5000)
-                        return -5000;
-                }
-                ++i;
+                    break;
+               if (hValue == -5000)
+               {
+                    board = childrenBoard[i];
+                    childrenBoard = null;
+                    Log("move position: " + i + " count=" + count);
+                    return hValue;
+               }
+               if (minimumValue == hValue)
+               {
+                   equalMoves.Add(tempBoard);
+                   move = i;
+               }
+               else if (hValue < minimumValue)
+               {
+                   minimumValue = hValue;
+                   board = childrenBoard[i];
+                   equalMoves.Empty();
+                   equalMoves.Add(board);
+                   move = i;
+                   moveFirst = i;
+               }
+               if (minimumValue <= alpha)
+               {
+                    board = getRandomMove(equalMoves);
+                    childrenBoard = null;
+                    Log("move position: " + move + " count=" + count);
+                    return hValue;
+               }
+               beta = Math.Min(beta, minimumValue);
+               ++i;
             }
-            hValue = minimumValue;
-            if (depth == 1)
+            if (equalMoves.Count!=0) 
                 board = getRandomMove(equalMoves);
-            
+            else 
+                board=null;
             childrenBoard = null;
-            return hValue;
+            Log("movefirst position: " + moveFirst+" move last: "+move + " count=" + count);
+            return minimumValue;
         }
 
+        //returns a move/board randomly from a set of board with equal quality
         private static byte[] getRandomMove(LightList equalMoves)
         {
             if (equalMoves.Count == 1)
+            {
                 return equalMoves[0];
+            }
             else
             {
                 Random rnd = new Random();
@@ -357,6 +353,20 @@ namespace ShallowRed
                 }
                 count--;
             } while (swapped);
+        }
+
+        private static void shift(ref LightList children, ref int[] h, int indexFound)
+        {
+            byte [] tempBest=children[indexFound];
+            int Hbest=h[indexFound];
+
+            for (int i = indexFound; i > 0; --i)
+            {
+                children.Replace(children[i - 1], i);
+                h[i] = h[i - 1];
+            }
+            children.Replace(tempBest, 0);
+            h[0] = Hbest;
         }
     }
 }
