@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
- 
 namespace ShallowRed
 {
     public class LightList
@@ -102,4 +102,46 @@ namespace ShallowRed
         }
     }
 
+    public class OLightList
+    {
+        public int Count = 0;
+        private char[][] list = new char[150][];
+        public void Add(char[] board)
+        {
+            list[Count++] = board;
+        }
+        public char[] this[int i]
+        {
+            get { return list[i]; }
+            private set { }
+        }
+    }
+
+    public class LeafList
+    {
+        public int Count = 0;
+        private byte[][] list = new byte[80][];
+        public int[] associatedPosition = new int[80];
+
+        public void Add(byte[] board, int pos)
+        {
+            list[Count] = board;
+            associatedPosition[Count++] = pos;
+        }
+
+        public byte[] this[int i]
+        {
+            get { return list[i]; }
+            private set { }
+        }
+
+        public void Empty()
+        {
+            Count = 0;
+        }
+        public void Replace(byte[] board, int pos)
+        {
+            list[pos] = board;
+        }
+    }
 }
