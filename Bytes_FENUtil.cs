@@ -155,6 +155,34 @@ namespace ShallowRed
             b[from] = _;
             return b;
         }
+        
+        public static bool isStartGame(byte[] board, bool white)
+        {
+            if (white)
+            {
+                for (int i = 48; i < 56; ++i)
+                {
+
+                    if (board[i] != P) return false;
+                }
+                if (board[57] != N) return false;
+                if (board[62] != N) return false;
+                return true;
+            }
+            else
+            {
+                for (int i = 8; i < 16; ++i)
+                {
+
+                    if (board[i] != p) return false;
+                }
+                if (board[1] != n) return false;
+                if (board[6] != n) return false;
+                return true;
+            }
+
+        }
+        
         public static byte[] MovePawn(this byte[] board, int from, int to, bool white)
         {
             byte[] b = (byte[])board.Clone();
