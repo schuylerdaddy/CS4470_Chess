@@ -738,7 +738,7 @@ namespace ShallowRed
             if (idx < OUTOFBOUNDSHIGH && originRow < COL8 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -756,7 +756,7 @@ namespace ShallowRed
             if (idx < OUTOFBOUNDSHIGH && originRow > COL1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -774,7 +774,7 @@ namespace ShallowRed
             if (idx < OUTOFBOUNDSHIGH && originRow < COL7 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -792,7 +792,7 @@ namespace ShallowRed
             if (idx < OUTOFBOUNDSHIGH && originRow > COL2 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -810,7 +810,7 @@ namespace ShallowRed
             if (idx > OUTOFBOUNDSLOW && originRow > COL1 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -828,7 +828,7 @@ namespace ShallowRed
             if (idx > OUTOFBOUNDSLOW && originRow < COL8 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -846,7 +846,7 @@ namespace ShallowRed
             if (idx > OUTOFBOUNDSLOW && originRow > COL2 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -864,7 +864,7 @@ namespace ShallowRed
             if (idx > OUTOFBOUNDSLOW && originRow < COL7 && board.IsValidMove(white, idx))
             {
                 temp = board.Move(i, idx);
-                if (allowCheck || !InCheck(board, white))
+                if (allowCheck || !InCheck(temp, white))
                 {
                     if (white ? board[idx].IsLower() : board[idx].IsUpper())
                         moves.AddCapture(temp);
@@ -1446,6 +1446,55 @@ namespace ShallowRed
                 }
             }
             return -1;
+        }
+
+        public static int GetPieceHazard(byte[] board, bool white)
+        {
+            int safetyHazard=0;
+
+            for (int i = 0; i < OUTOFBOUNDSHIGH; ++i)
+            {
+               if (!white){
+                switch (board[i])
+                        {
+                            case 0x04:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-200:0;
+                                break;
+                            case 0x06:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-155:0;
+                                break;
+                            case 0x08:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-150:0;
+                                break;
+                            case 0x0A:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-400:0;
+                                break;
+                            
+                            default: break;
+                        }
+                    }
+               else
+                    {
+                        switch (board[i])
+                        {
+
+                            case 0x03:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-200:0;
+                                break;
+                            case 0x05:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-155:0;
+                                break;
+                            case 0x07:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-150:0;
+                                break;
+                            case 0x09:
+                                safetyHazard+=PieceNotSafe(board,i,white)?-400:0;
+                                break;
+                            default: break;
+                        }
+                    }
+                }
+             return safetyHazard;
         }
 
         public static int GetPiecePos(byte[] board, bool white, byte piece)
