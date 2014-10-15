@@ -632,7 +632,7 @@ namespace ShallowRed
                 {
                     temp = board.Move(i, idx);
                     bool cap = board.TakesOpponentPiece(white, idx);
-                    if (allowCheck || !InCheck(board, white))
+                    if (allowCheck || !InCheck(temp, white))
                     {
                         if (cap)
                             moves.AddCapture(temp);
