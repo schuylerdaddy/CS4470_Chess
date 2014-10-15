@@ -151,7 +151,7 @@ namespace ShallowRed
 {0x0C, 20000}
 };
 
-        private static bool lateGame = false;
+        public static bool lateGame = false;
 
         #region " Location Values "
         private static int[] whitPawnLocationValues =
