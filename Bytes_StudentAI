@@ -35,13 +35,15 @@ get { return "Shallow Red 2 (Debug)"; }
         public ChessMove GetNextMove(ChessBoard board, ChessColor myColor)
         {
             //convert Fen for to shallow red fen form
-            String originalFenBoard = board.ToPartialFenBoard();
-            byte[] SRfen = FEN.ToShallowRedFENBytes(originalFenBoard);
-            byte[] boardAfterMove = Minimax.miniMax(SRfen, myColor);
-            ChessMove move = FEN.GenerateMove(SRfen, boardAfterMove);
             bool white = true;
             if (myColor == ChessColor.White)
                 white = false;
+            String originalFenBoard = board.ToPartialFenBoard();
+            byte[] SRfen = FEN.ToShallowRedFENBytes(originalFenBoard);
+            if (FEN.isStartGame(SRfen, white)) Heuristic.lateGame = false;
+            byte[] boardAfterMove = Minimax.miniMax(SRfen, myColor);
+            ChessMove move = FEN.GenerateMove(SRfen, boardAfterMove);
+            
             if (FEN.InCheck(boardAfterMove, white))
             {
                 move.Flag = ChessFlag.Check;
