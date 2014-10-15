@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace ShallowRed
 {
     public class LightList
     {
         public int Count = 0;
-        private byte[][] list = new byte[150][];
+        private byte[][] list = new byte[75][];
         public void Add(byte[] board)
         {
             list[Count++] = board;
@@ -29,11 +29,39 @@ namespace ShallowRed
             list[pos] = board;
         }
 
+        public void Remove(byte[] board)
+        {
+            int position = -99;
+            for (int idx = 0; idx < Count; ++idx)
+            {
+                bool equal = true;
+                for (int i = 0; i < FEN.OUTOFBOUNDSHIGH; i++)
+                {
+                    if (list[idx][i] != board[i])
+                    {
+                        equal = false;
+                        break;
+                    }
+                }
+                if (equal)
+                {
+                    position = idx;
+                    break;
+                }
+            }
+            if (position == -99) return;
+            for (int i = position; i < Count - 1; ++i)
+            {
+                list[i]=list[i+1];
+            }
+            --Count;
+        }
+
         public static LightList ConvertBuffer(BoardBuffer bf)
         {
             LightList ll = new LightList();
-       
-            for(int i =0;i<bf.capCount;++i)
+
+            for (int i = 0; i < bf.capCount; ++i)
             {
                 ll.Add(bf.captures[i]);
             }
@@ -64,11 +92,11 @@ namespace ShallowRed
 
     public class BoardBuffer
     {
-        public byte[][] captures = new byte[20][];
-        public byte[][] threats = new byte[20][];
-        public byte[][] forward = new byte[30][];
+        public byte[][] captures = new byte[30][];
+        public byte[][] threats = new byte[40][];
+        public byte[][] forward = new byte[50][];
         public byte[][] other = new byte[50][];
-        public byte[][] notSafe = new byte[30][];
+        public byte[][] notSafe = new byte[50][];
 
         public int capCount = 0;
         public int thrCount = 0;
@@ -116,32 +144,3 @@ namespace ShallowRed
             private set { }
         }
     }
-
-    public class LeafList
-    {
-        public int Count = 0;
-        private byte[][] list = new byte[80][];
-        public int[] associatedPosition = new int[80];
-
-        public void Add(byte[] board, int pos)
-        {
-            list[Count] = board;
-            associatedPosition[Count++] = pos;
-        }
-
-        public byte[] this[int i]
-        {
-            get { return list[i]; }
-            private set { }
-        }
-
-        public void Empty()
-        {
-            Count = 0;
-        }
-        public void Replace(byte[] board, int pos)
-        {
-            list[pos] = board;
-        }
-    }
-}
