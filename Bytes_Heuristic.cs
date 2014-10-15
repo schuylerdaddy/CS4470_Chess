@@ -19,8 +19,9 @@ namespace ShallowRed
         /// <returns>integer representing the heuristic</returns>
         public static int GetHeuristicValue(byte[] boardState, ChessColor color)
         {
+            bool white = color == ChessColor.White;
             int pH = GetPieceValueHeuristic(boardState, color);
-            int pS = PieceSafety(boardState, color);
+            int pS = FEN.GetPieceHazard(boardState, white);
             return pH + pS;
         }
 
