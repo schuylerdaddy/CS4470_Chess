@@ -76,11 +76,14 @@ namespace ShallowRed
         {
             int hazardPenalty = 0;
             bool white = color == ChessColor.White;
-            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.q), white) ? -400 : 0;
+
+            hazardPenalty = FEN.GetPieceHazard (boardState, white);
+            /*
+                hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.q), white) ? -400 : 0;
             //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.r), white) ? -200 : 0;
             //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.n), white) ? -150 : 0;
             //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.b), white) ? -155 : 0;
-            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.p), white) ? -40 : 0;
+            //hazardPenalty += FEN.PieceNotSafe(boardState, FEN.GetPiecePos(boardState, white, FEN.p), white) ? -40 : 0;*/
 
             return hazardPenalty;
         }
